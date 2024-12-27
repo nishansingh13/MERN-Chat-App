@@ -73,10 +73,10 @@ function App() {
     
     
     console.log(otp + "h");
-    console.log(data_pass);
+    console.log(data_pass.otp);
 
   
-    if (otp == data_pass) {
+    if (otp == data_pass.otp) {
       
       alert("OTP verified successfully!");
       handleSubmit(); 
