@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require("dotenv");
 const cors = require('cors');
 const colors = require("colors");
+const userRoutes = require("./routes/userroutes");
 const connectDB = require("./config/db");
 dotenv.config();
 connectDB();
@@ -10,9 +11,10 @@ const bodyParser = require('body-parser');
 const chatroute = require('./routes/chat');
 
 const app = express();
-
+app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/api/user", userRoutes);
 
 // Use routes
 
