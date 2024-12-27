@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/UserModel");
 const generatetoken = require("../config/generatetoken");
 
-const registeruser = async(req,res)=>{
+const registeruser = asyncHandler(async(req,res)=>{
     const {name , email , password , pic } = req.body;
     if(!name || !email || !password){
         res.status(404);
@@ -21,5 +21,17 @@ const registeruser = async(req,res)=>{
     else{
         throw new Error("Failed to Create Userr");
     }
-}
-module.exports = {registeruser};
+})
+const authUser = asyncHandler(async(req,res)=>{
+    const {email,password} = req.body;
+    const user = await User.findOne({email});
+    if(user && (await user.matchpass(password))){
+        res.json({_id : user._id, name: user.name , email : user.email, pic : user.pic , token : generatetoken(user._id)});
+
+    }
+    else{
+        res.status(400);
+        throw new Error("Wrong email or password!!");
+    }
+})
+module.exports = {registeruser,authUser};
