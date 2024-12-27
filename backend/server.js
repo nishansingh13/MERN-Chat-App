@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const registerRoutes = require('./routes/register');
 const otpRoutes = require('./routes/sendotp');
+const chatroute = require('./routes/chat');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(bodyParser.json());
 // Use routes
 app.use('/register', registerRoutes);
 app.use('/send-otp', otpRoutes);
+app.use('/api/chat',chatroute);
 
 const PORT = 5000;
 app.listen(PORT, () => {
