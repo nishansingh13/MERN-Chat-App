@@ -1,5 +1,6 @@
 import React from 'react';
-import { useState,useEffect,useNavigate} from 'react';
+import { useState,useEffect} from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import close from '../assets/close.png';
 import open from '../assets/open.png';
@@ -23,26 +24,35 @@ function Login(){
     const [data_pass, setDataPass] = useState(null);
     const [name,setName] = useState("");
     const [loading,setLoading] = useState(false);
-    const hlogin = async(e)=>{
+    const navigate = useNavigate();
+    const hlogin = async (e) => {
       e.preventDefault();
-      console.log({email,password})
-      if(!email || !password){
-        alert("Please fill all");
+      console.log({ email, password });
+    
+      if (!email || !password) {
+        alert("Please fill all fields");
         return;
       }
-      const login_data = {email,password};
-      try{
-          const res = await axios.post("http://localhost:5000/api/user/login",login_data);
-          console.log(res.data);
-          if(res.status==200){
-            console.log("done");
-          }
-          console.log(res.status);
-         
-      }catch(err){
-        console.log(err.response.data.message)
+    
+      const login_data = { email, password };
+      try {
+        const res = await axios.post("http://localhost:5000/api/user/login", login_data);
+    
+        if (res.status === 200) {
+          console.log("Login successful");
+          const userData = res.data;
+          localStorage.setItem("userInfo", JSON.stringify(userData));
+          console.log("User data saved to localStorage");
+    
+          // Redirect the user
+          navigate("/chats");
+        }
+      } catch (err) {
+        console.error(err.response?.data?.message || "An error occurred");
+        alert(err.response?.data?.message || "An error occurred");
       }
-    }
+    };
+    
   
    const hsignup = async(e)=>{
     e.preventDefault();
@@ -62,7 +72,13 @@ function Login(){
 
       try {
         const response = await axios.post("http://localhost:5000/api/user", data);
-        console.log("User created:", response.data);
+        if(response.status==201){
+          console.log("User created:", response.data);
+          alert("Signup Successful");
+          localStorage.setItem('userInfo', JSON.stringify(response.data));
+          navigate('/chats');
+        }
+       
       } catch (error) {
         ( error.response ? alert(error.response.data.message) : error.message);
       }

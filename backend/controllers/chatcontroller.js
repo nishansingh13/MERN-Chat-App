@@ -85,5 +85,77 @@ const fetchchats = asyncHandler(async(req,res)=>{
     }
 
 })
+const creategroupchat = asyncHandler(async(req,res)=>{
+    if(!req.body.users|| !req.body.name){
+      return res.status(400).send({message:"Please fill all the fields nigga"});
+    }
+      var users = JSON.parse(req.body.users);
+      if(users.length<2){
+        return res.status(400).send("More than 2 users are required to create a group");
+      }
+      users.push(req.user);
+      try{
+        const groupchat = await Chat.create({
+          chatName: req.body.name,
+          users : users,
+          isGroupChat : true,
+          groupAdmin : req.user
+        })
+        const fullgroupchat = await Chat.findOne({_id:groupchat._id})
+        .populate("users","-password")
+        .populate("groupAdmin","-password");
+        res.status(200).send(fullgroupchat);
+      }
+      catch(err){
+        res.status(400).send("Coudn't create group")
+      } 
+})
+const renameGroup = asyncHandler(async(req,res)=>{
+    const { chatid , chatName } = req.body;
+    const updatechat = await Chat.findByIdAndUpdate(chatid,{
+       chatName
+    },
+    {new:true}
+  ).populate("users","-password")
+  .populate("groupAdmin","-password")
+  if(!updatechat){
+    res.status(400)
+    throw new Error("Chat not found");
+  }
+  else{
+    res.json(updatechat);
+  }
+})
+const addtogroup = asyncHandler(async(req,res)=>{
+    const {chatid,userid} = req.body;
+    const added = await Chat.findByIdAndUpdate(chatid,{
+      $push : {users:userid},
+    },
+    {new :true}
+  ).populate("users","-password")
+  .populate("groupAdmin","-password")
+  if(!added){
+    res.status(400).send("Chat not found");
+  }
+  else{
+    res.json(added);
+  }
+})
+const removefromgroup = asyncHandler(async(req,res)=>{
+  const {chatid,userid} = req.body;
+  const removed = await Chat.findByIdAndUpdate(chatid,{
+    $pull : {users:userid},
+  },
+  {new :true}
+).populate("users","-password")
+.populate("groupAdmin","-password")
+if(!removed){
+  res.status(400).send("Chat not found");
+}
+else{
+  res.json(removed);
+}
 
-module.exports = { accessChat,fetchchats };
+})
+
+module.exports = { accessChat,fetchchats,creategroupchat,renameGroup,addtogroup,removefromgroup};
