@@ -6,7 +6,7 @@ function Userdata() {
 
   const fetchChats = async () => {
     try {
-      const { data } = await axios.get("http://localhost:5000/api/chat");
+      const { data } = await axios.get("api/chat");
       setuserdata(data);
       console.log(data); // Ensure this logs correctly
     } catch (error) {
