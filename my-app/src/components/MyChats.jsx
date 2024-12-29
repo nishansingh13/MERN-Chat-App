@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Groupchat from "./supports/Groupchat";
+import { MessageCircle } from 'lucide-react';
 function MyChats() {
     const {
         selectedChat,
@@ -51,22 +52,27 @@ function MyChats() {
 
     return (
         <>  
+        <div className=" absolute top-[4rem] bg-blue-400 h-[42.5rem] w-[30rem] x-2 overflow-auto">
         <Groupchat/>
             {console.log(mdata)}
             {console.log(chats.length)}
+            
             <div>
                 {chats.map((chat) => {
                     return (
-                        <div key={chat._id}>
+
+                <div key={chat._id} className={`cursor-pointer pl-2 bg-black ${selectedChat==chat?"bg-green-400   ":"bg-gray-400"}`} onClick={()=>setSelectedChat(chat)}>
+                                
                             <div>
     {chat.isGroupChat ? (
-        <div>
+        <div className="flex gap-2 my-2 py-2">
+            <div><MessageCircle size={30} className="text-white"/></div>
+            <div>{chat.chatName}</div>
            
-            <div>Group Chat: {chat.chatName}</div>
         </div>
     ) : (
-        <div>
-            
+        <div className="flex gap-2 my-2 py-2">
+            <img src={chat.users[1].pic} className="w-[2rem] rounded-full"  />
             <div>{chat.users[1].name}</div>
         </div>
     )}
@@ -75,6 +81,7 @@ function MyChats() {
                         </div>
                     );
                 })}
+            </div>
             </div>
         </>
     );

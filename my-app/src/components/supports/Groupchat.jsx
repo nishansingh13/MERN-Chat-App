@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,13 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChatState } from "@/Context/ChatProvider";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 function Groupchat() {
@@ -25,8 +27,13 @@ function Groupchat() {
   const [search, setsearch] = useState("");
   const [searchresults, setsearchresults] = useState([]);
   const [loading, setloading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);  // Track dialog open/close state
   const toast = useToast();
   const { user, chats, setChats } = ChatState();
+
+  const removeUser = (userId) => {
+    setselectedusers(selectedusers.filter((user) => user._id !== userId));
+  };
 
   const handlesearch = async (query) => {
     setsearch(query);
@@ -45,7 +52,6 @@ function Groupchat() {
         config
       );
       setsearchresults(data);
-      console.log(data);
     } catch (err) {
       console.log("Error", err);
     } finally {
@@ -53,19 +59,70 @@ function Groupchat() {
     }
   };
 
-  const handlesubmit = async (query) => {};
+  const handlegroup = (add) => {
+    if (selectedusers.includes(add)) {
+      alert("already there");
+      return;
+    }
+    setselectedusers([...selectedusers, add]);
+  };
+
+  const handlesubmit = async () => {
+    if (!groupchatname || selectedusers.length === 0) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await axios.post(
+        "http://localhost:5000/api/chat/group",
+        {
+          name: groupchatname,
+          users: JSON.stringify(selectedusers.map((u) => u._id)),
+        },
+        config
+      );
+      setChats([data, ...chats]);
+      setIsOpen(false);  // Close dialog after successful group creation
+      alert("Group created");
+    } catch (error) {
+      console.error("Error creating group", error);
+    }
+    
+  };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>Create Group</Button>
+        <Button onClick={() => setIsOpen(true)} className="relative left-[70%] my-2">Create Group</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] overflow-auto">
         <DialogHeader>
           <DialogTitle>Create Group Chat</DialogTitle>
           <DialogDescription>Create group with one single click</DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
+          <div className="mx-auto flex gap-5">
+            {selectedusers.map((user) => {
+              return (
+                <div key={user._id}>
+                  <div className="gap-4">
+                    <Badge className="py-1">{user.name}</Badge>
+                    <X
+                      onClick={() => removeUser(user._id)}
+                      className="relative bottom-[2rem] left-[93%] w-4 h-4 text-white border border-black rounded-full bg-black cursor-pointer"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
@@ -87,10 +144,11 @@ function Groupchat() {
               className="col-span-3"
             />
           </div>
+
           <div className="mx-auto">
             {loading ? (
               <div className="h-[7rem] w-[19rem] rounded-md border mx-auto">
-                Loading..
+                Loading...
               </div>
             ) : (
               searchresults.length > 0 && (
@@ -98,9 +156,9 @@ function Groupchat() {
                   <div className="p-4">
                     <h4 className="mb-4 text-sm font-medium leading-none">USERS</h4>
                     {searchresults.map((user) => (
-                      <>
+                      <div key={user._id}>
                         <div
-                          key={user._id}
+                          onClick={() => handlegroup(user)}
                           className="text-sm flex bg-gray-300 w-[90%] cursor-pointer hover:bg-green-300 rounded-sm"
                         >
                           <img
@@ -113,7 +171,7 @@ function Groupchat() {
                           </div>
                         </div>
                         <Separator className="my-2" />
-                      </>
+                      </div>
                     ))}
                   </div>
                 </ScrollArea>
@@ -125,6 +183,9 @@ function Groupchat() {
           <Button type="submit" onClick={handlesubmit}>
             Save changes
           </Button>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -7,6 +7,7 @@ const sendotp = require("./routes/sendotp");
 const userRoutes = require("./routes/userroutes");
 const connectDB = require("./config/db");
 const mongoose = require("mongoose");
+const messageroutes = require("./routes/messageroutes");
 dotenv.config();
 connectDB();
 const bodyParser = require('body-parser');
@@ -23,7 +24,10 @@ app.use("/send-otp",sendotp);
 // Use routes
 
 app.use("/api/chat",chatroute);
-
+app.use("/api/message",messageroutes);
+app.get("/",(req,res)=>{
+  res.send("working");
+})
 app.use('/mdata',async(req,res)=>{
     const data = await User.find({});
     res.json(data);
