@@ -43,8 +43,6 @@ function Login(){
           const userData = res.data;
           localStorage.setItem("userInfo", JSON.stringify(userData));
           console.log("User data saved to localStorage");
-    
-          // Redirect the user
           navigate("/chats");
         }
       } catch (err) {

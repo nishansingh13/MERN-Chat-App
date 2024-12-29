@@ -1,27 +1,32 @@
-import React from "react";
-import { ChatState } from "../Context/ChatProvider";
-import Sidebar from "../components/supports/Sidebar";
-import ChatBox from "../components/ChatBox";
-import MyChats from "../components/MyChats";
-import { useToast } from "@/hooks/use-toast"
+import React, { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-function ChatPage(){
-    const { toast } = useToast()
+import DropDown from "@/components/supports/DropDown";
+import AppSidebar from "@/components/supports/AppSidebar";
+import { ChatState } from "@/Context/ChatProvider";
+import MyChats from "@/components/MyChats";
+
+function ChatPage() {
+  const {user} = ChatState();
+  const [open, setOpen] = useState(false);
  
-    return (
-        <Button
-      onClick={() => {
-        toast({
-          title: "Scheduled: Catch up",
-          description: "Friday, February 10, 2023 at 5:57 PM",
-          duration: 2000,
-          className: "bg-black text-white p-4 rounded-lg shadow-md flex items-center",  // Tailwind classes
-        });
-      }}
-    >
-        Show Toast
-      </Button>
-    )
+  return (
+    
+    <div className="bg-blue-200 h-lvh">
+      <div className="flex justify-between px-[1rem] bg-white mt-2">
+        <div onClick={() => setOpen(!open)}>Search User</div>
+        <div>BAATEIN</div>
+        <div className="flex">
+          <DropDown />
+        </div>
+      
+      </div>
+      <MyChats/>
+      <AppSidebar open={open} setOpen={setOpen} />
+     
+      
+    </div>
+    
+  );
 }
+
 export default ChatPage;

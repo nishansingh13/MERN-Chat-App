@@ -7,13 +7,17 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import ChatProvider from './Context/ChatProvider';
 import { Toaster } from "@/components/ui/toaster";  // Import the Toaster component
 
+
+
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+ 
     <Router>
       <ChatProvider>
+    
         <App />
-        <Toaster />  {/* Place the Toaster here */}
+        <Toaster /> 
+        
       </ChatProvider>
     </Router>
-  </StrictMode>
+ 
 );
