@@ -68,6 +68,7 @@ function ChatBox() {
         // Update the messages state with the new message
         setMessages((prevMessages) => [...prevMessages, data]);
 
+        //ok
         // Emit the new message to the socket
         if (socketRef.current) {
           socketRef.current.emit("new message", data);
@@ -117,7 +118,7 @@ function ChatBox() {
                 : selectedChat.users[0].name
               : selectedChat.chatName}
           </div>
-
+              
           <div className="h-[400px] w-full mt-[5rem]">
             <Scrollbars autoHide autoHideTimeout={1000} autoHideDuration={200} className="mt-[2rem]">
               <div className="p-4">
