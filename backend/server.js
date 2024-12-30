@@ -35,12 +35,12 @@ app.use('/mdata',async(req,res)=>{
 })
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`.yellow.bold);
+  console.log(`Server running on http://192.168.1.9:${PORT}`.yellow.bold);
 });
 const io = require("socket.io")(server,{
   pingTimeout : 60000,
   cors:{
-    origin : "http://localhost:5173"
+    origin : "http://192.168.1.9:5173"
   }
 });
 io.on("connection",(socket)=>{

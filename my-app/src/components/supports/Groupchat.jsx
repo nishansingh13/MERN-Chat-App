@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -21,13 +20,12 @@ import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { useState } from "react";
 
-function Groupchat() {
+function Groupchat({ setIsOpen }) {
   const [groupchatname, setgroupchatname] = useState("");
   const [selectedusers, setselectedusers] = useState([]);
   const [search, setsearch] = useState("");
   const [searchresults, setsearchresults] = useState([]);
   const [loading, setloading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);  // Track dialog open/close state
   const toast = useToast();
   const { user, chats, setChats } = ChatState();
 
@@ -93,84 +91,87 @@ function Groupchat() {
     } catch (error) {
       console.error("Error creating group", error);
     }
-    
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)} className="relative left-[70%] my-2">Create Group</Button>
-      </DialogTrigger>
+    <Dialog open onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px] overflow-auto">
         <DialogHeader>
           <DialogTitle>Create Group Chat</DialogTitle>
           <DialogDescription>Create group with one single click</DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="mx-auto flex gap-5">
+        <div className="space-y-4 py-4">
+          {/* Selected Users */}
+          <div className="flex flex-wrap gap-3">
             {selectedusers.map((user) => {
               return (
-                <div key={user._id}>
-                  <div className="gap-4">
-                    <Badge className="py-1">{user.name}</Badge>
-                    <X
-                      onClick={() => removeUser(user._id)}
-                      className="relative bottom-[2rem] left-[93%] w-4 h-4 text-white border border-black rounded-full bg-black cursor-pointer"
-                    />
-                  </div>
+                <div key={user._id} className="flex items-center gap-2">
+                  <Badge className="py-1">{user.name}</Badge>
+                  <X
+                    onClick={() => removeUser(user._id)}
+                    className="w-4 h-4 text-white bg-black cursor-pointer rounded-full"
+                  />
                 </div>
               );
             })}
           </div>
+
+          {/* Group Chat Name */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+            <Label htmlFor="group-name" className="text-right">
               Name
             </Label>
             <Input
-              id="name"
-              defaultValue=""
-              className="col-span-3"
+              id="group-name"
+              value={groupchatname}
               onChange={(e) => setgroupchatname(e.target.value)}
+              className="col-span-3"
             />
           </div>
+
+          {/* Add Users */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-right">
               Add Users
             </Label>
             <Input
               id="username"
+              value={search}
               onChange={(e) => handlesearch(e.target.value)}
               className="col-span-3"
+              placeholder="Search users..."
             />
           </div>
 
-          <div className="mx-auto">
+          {/* Search Results */}
+          <div className="mt-4">
             {loading ? (
-              <div className="h-[7rem] w-[19rem] rounded-md border mx-auto">
+              <div className="h-[7rem] w-full rounded-md border flex items-center justify-center">
                 Loading...
               </div>
             ) : (
               searchresults.length > 0 && (
-                <ScrollArea className="h-[7rem] w-[19rem] rounded-md border ml-[rem]">
+                <ScrollArea className="h-[7rem] w-full rounded-md border">
                   <div className="p-4">
-                    <h4 className="mb-4 text-sm font-medium leading-none">USERS</h4>
+                    <h4 className="mb-4 text-sm font-medium leading-none">Users</h4>
                     {searchresults.map((user) => (
                       <div key={user._id}>
                         <div
                           onClick={() => handlegroup(user)}
-                          className="text-sm flex bg-gray-300 w-[90%] cursor-pointer hover:bg-green-300 rounded-sm"
+                          className="flex items-center bg-gray-200 hover:bg-green-200 cursor-pointer rounded-sm p-2 mb-2"
                         >
                           <img
                             src={user.pic}
-                            className="w-[1.5rem] h-[1.5rem] rounded-full m-2"
+                            className="w-[2rem] h-[2rem] rounded-full"
+                            alt="user"
                           />
-                          <div>
-                            <div> {user.name} </div>
-                            <div className="text-[0.75rem]">{user.email}</div>
+                          <div className="ml-3">
+                            <div>{user.name}</div>
+                            <div className="text-xs text-gray-500">{user.email}</div>
                           </div>
                         </div>
-                        <Separator className="my-2" />
+                        <Separator />
                       </div>
                     ))}
                   </div>
@@ -179,12 +180,14 @@ function Groupchat() {
             )}
           </div>
         </div>
-        <DialogFooter>
-          <Button type="submit" onClick={handlesubmit}>
-            Save changes
+
+        {/* Footer Buttons */}
+        <DialogFooter className="flex justify-between">
+          <Button onClick={handlesubmit} className="w-1/2 bg-green-600 hover:bg-green-700">
+            Create Group
           </Button>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="w-1/2">Cancel</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

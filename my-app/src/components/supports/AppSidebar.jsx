@@ -98,7 +98,7 @@ function AppSidebar({ open, setOpen }) {
   <Sidebar
     open={open}
     onClose={() => setOpen(false)}
-    className={`transition-all ${open ? "translate-x-0" : "-translate-x-full"}`}
+    className={`transition-all w-[25rem] o ${open ? "translate-x-0" : "-translate-x-full"}`}
   >
     <SidebarContent className="h-full"> {/* Prevents sidebar from scrolling */}
       <SidebarGroup>

@@ -44,6 +44,7 @@ function Login(){
           localStorage.setItem("userInfo", JSON.stringify(userData));
           console.log("User data saved to localStorage");
           navigate("/chats");
+          window.location.reload();
         }
       } catch (err) {
         console.error(err.response?.data?.message || "An error occurred");
