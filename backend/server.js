@@ -13,6 +13,7 @@ connectDB();
 const bodyParser = require('body-parser');
 
 const chatroute = require('./routes/chatroutes');
+const { Socket } = require('socket.io');
 
 const app = express();
 app.use(express.json());
@@ -33,6 +34,19 @@ app.use('/mdata',async(req,res)=>{
     res.json(data);
 })
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`.yellow.bold);
 });
+// const io = require("socket.io")(server,{
+//   pingTimeout : 60000,
+//   cors:{
+//     origin : "http://localhost:5173"
+//   }
+// });
+// io.on("connection",(socket)=>{
+//     console.log("connected to socket.io");
+//     socket.on('setup',(userdata)=>{
+//       socket.join(userdata._id);
+//       socket.emit("connected");
+//     })
+// });

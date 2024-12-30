@@ -48,7 +48,7 @@ function Groupchat() {
         },
       };
       const { data } = await axios.get(
-        `http://localhost:5000/api/user?search=${search}`,
+        `http://192.168.1.9:5000/api/user?search=${search}`,
         config
       );
       setsearchresults(data);
@@ -80,7 +80,7 @@ function Groupchat() {
         },
       };
       const { data } = await axios.post(
-        "http://localhost:5000/api/chat/group",
+        "http://192.168.1.9:5000/api/chat/group",
         {
           name: groupchatname,
           users: JSON.stringify(selectedusers.map((u) => u._id)),

@@ -36,7 +36,7 @@ function Login(){
     
       const login_data = { email, password };
       try {
-        const res = await axios.post("http://localhost:5000/api/user/login", login_data);
+        const res = await axios.post("http://192.168.1.9:5000/api/user/login", login_data);
     
         if (res.status === 200) {
           console.log("Login successful");
@@ -69,7 +69,7 @@ function Login(){
     const data = { name, email,password};
 
       try {
-        const response = await axios.post("http://localhost:5000/api/user", data);
+        const response = await axios.post("http://192.168.1.9:5000/api/user", data);
         if(response.status==201){
           console.log("User created:", response.data);
           alert("Signup Successful");

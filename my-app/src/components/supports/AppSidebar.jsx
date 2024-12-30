@@ -50,7 +50,7 @@ function AppSidebar({ open, setOpen }) {
             Authorization : `Bearer ${user.token}`
           }
         }
-        const {data} = await axios.post("http://localhost:5000/api/chat",{userid},config);
+        const {data} = await axios.post("http://192.168.1.9:5000/api/chat",{userid},config);
         console.log(chats);
         if(!chats.find((c)=>c._id===data._id)) setChats([data,...chats]); // if chat exists
         setSelectedChat(data);
@@ -82,7 +82,7 @@ function AppSidebar({ open, setOpen }) {
               Authorization: `Bearer ${user.token}`,
             }
            }
-           const {data} = await axios.get(`http://localhost:5000/api/user?search=${search}`,config)
+           const {data} = await axios.get(`http://192.168.1.9:5000/api/user?search=${search}`,config)
           setdata(data);
             
         }catch(err){
@@ -100,7 +100,7 @@ function AppSidebar({ open, setOpen }) {
     onClose={() => setOpen(false)}
     className={`transition-all ${open ? "translate-x-0" : "-translate-x-full"}`}
   >
-    <SidebarContent className="h-full overflow-hidden"> {/* Prevents sidebar from scrolling */}
+    <SidebarContent className="h-full"> {/* Prevents sidebar from scrolling */}
       <SidebarGroup>
         <button
           onClick={() => setOpen(false)}

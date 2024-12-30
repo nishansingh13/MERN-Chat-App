@@ -6,19 +6,15 @@ const User = require("../models/UserModel");
 // @route           POST /api/chat/
 // @access          Protected
 const accessChat = asyncHandler(async (req, res) => {
-  const { userid } = req.body;
+  const { userid } = req.body; // Changed to match the input
 
-  // Check if userid is provided in the request
   if (!userid) {
     console.log("UserId param not sent with request");
-    return res.status(400).json({ message: "UserId is required" });
+    return res.sendStatus(400);
   }
 
-  console.log("Authenticated User ID:", req.user._id); // Debugging: Log authenticated user
-  console.log("Received userid:", userid); // Debugging: Log requested userid
-
-  // Check if a one-to-one chat already exists
-  let isChat = await Chat.findOne({
+  // Find existing chat between the authenticated user and the target user
+  let isChat = await Chat.find({
     isGroupChat: false,
     $and: [
       { users: { $elemMatch: { $eq: req.user._id } } },
@@ -34,35 +30,31 @@ const accessChat = asyncHandler(async (req, res) => {
     select: "name pic email",
   });
 
-  // If chat exists, return it
-  if (isChat) {
-    console.log("Returning existing chat:", isChat); // Debugging: Log existing chat
-    return res.status(200).json(isChat);
-  }
+  // If the chat already exists, return it
+  if (isChat.length > 0) {
+    return res.send(isChat[0]);
+  } else {
+    // If no existing chat, create a new one
+    const chatData = {
+      chatName: "sender", // You can modify this as needed
+      isGroupChat: false,
+      users: [req.user._id, userid],
+    };
 
-  // If chat doesn't exist, create a new one
-  const chatData = {
-    chatName: "sender",
-    isGroupChat: false,
-    users: [req.user._id, userid],
-  };
-
-  try {
-    const createdChat = await Chat.create(chatData);
-
-    // Populate the newly created chat before sending response
-    const fullChat = await Chat.findOne({ _id: createdChat._id }).populate(
-      "users",
-      "-password"
-    );
-
-    console.log("Created new chat:", fullChat); // Debugging: Log newly created chat
-    return res.status(201).json(fullChat);
-  } catch (error) {
-    console.error("Error creating chat:", error.message); // Debugging: Log errors
-    res.status(400).json({ message: "Failed to create chat", error: error.message });
+    try {
+      const createdChat = await Chat.create(chatData);
+      const fullChat = await Chat.findOne({ _id: createdChat._id }).populate(
+        "users",
+        "-password"
+      );
+      return res.status(200).json(fullChat);
+    } catch (error) {
+      res.status(400);
+      throw new Error(error.message);
+    }
   }
 });
+
 const fetchchats = asyncHandler(async(req,res)=>{
     try{
         //.then((result)=>res.send(result));

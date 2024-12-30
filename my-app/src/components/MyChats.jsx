@@ -28,7 +28,7 @@ function MyChats() {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.get("http://localhost:5000/api/chat", config);
+            const { data } = await axios.get("http://192.168.1.9:5000/api/chat", config);
             setm(data);
             setChats(data);
         } catch (err) {
@@ -72,8 +72,22 @@ function MyChats() {
         </div>
     ) : (
         <div className="flex gap-2 my-2 py-2">
-            <img src={chat.users[1].pic} className="w-[2rem] rounded-full"  />
-            <div>{chat.users[1].name}</div>
+            <img 
+  src={
+    chat.users[0]._id === user._id 
+    ? chat.users[1].pic 
+    : chat.users[0].pic
+  } 
+  className="w-[2rem] rounded-full" 
+/>
+<div>
+  {
+    chat.users[0]._id === user._id 
+    ? chat.users[1].name 
+    : chat.users[0].name
+  }
+</div>
+
         </div>
     )}
 </div>
