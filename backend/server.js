@@ -37,16 +37,29 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`.yellow.bold);
 });
-// const io = require("socket.io")(server,{
-//   pingTimeout : 60000,
-//   cors:{
-//     origin : "http://localhost:5173"
-//   }
-// });
-// io.on("connection",(socket)=>{
-//     console.log("connected to socket.io");
-//     socket.on('setup',(userdata)=>{
-//       socket.join(userdata._id);
-//       socket.emit("connected");
-//     })
-// });
+const io = require("socket.io")(server,{
+  pingTimeout : 60000,
+  cors:{
+    origin : "http://localhost:5173"
+  }
+});
+io.on("connection",(socket)=>{
+    console.log("connected to socket.io");
+    socket.on('setup',(userdata)=>{
+      socket.join(userdata._id);
+      //here
+      socket.emit("connected");
+    })
+    socket.on('join chat',(room)=>{
+      socket.join(room);
+      console.log("user room joind "+room);
+    })
+    socket.on("new message",(newmessage)=>{
+      var chat = newmessage.chat;
+      if(!chat.users) return console.log("chat.users not defined");
+      chat.users.forEach(user=>{
+        if(user._id == newmessage.sender._id) return;
+        socket.in(user._id).emit("message received",newmessage);
+      })
+    })
+});

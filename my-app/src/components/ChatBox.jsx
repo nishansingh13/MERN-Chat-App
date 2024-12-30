@@ -1,19 +1,16 @@
 import { ChatState } from "@/Context/ChatProvider";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Input } from "./ui/input";
 import axios from "axios";
 import { Scrollbars } from "react-custom-scrollbars-2";
-import {Bubble} from 'react-chat-bubble';
 import { io } from "socket.io-client";
 
 function ChatBox() {
-  
   const endpoint = "http://localhost:5000";
-  var socket,selectedChatcompare;
   const { selectedChat, user } = ChatState();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [socketconnected,setsocketconnected] = useState(false);
+  const socketRef = useRef(null);  // Using useRef to store the socket instance
 
   const fetchMessages = async () => {
     if (!selectedChat) return;
@@ -30,14 +27,20 @@ function ChatBox() {
         config
       );
       setMessages(data);
+
+      if (socketRef.current) {
+        socketRef.current.emit("join chat", selectedChat._id);  // Use socket from useRef
+      }
     } catch (err) {
       console.error("Error fetching messages:", err);
     }
   };
 
   useEffect(() => {
-    fetchMessages();
-  }, [selectedChat]);
+    if (selectedChat && user) {
+      fetchMessages();  // Fetch messages when selectedChat or user changes
+    }
+  }, [selectedChat, user]);
 
   const sendMessage = async (e) => {
     if (e.key === "Enter" && newMessage) {
@@ -60,8 +63,15 @@ function ChatBox() {
           config
         );
 
-        setNewMessage(""); // Clear input
-        fetchMessages(); // Fetch latest messages
+        setNewMessage("");  // Clear input field
+
+        // Update the messages state with the new message
+        setMessages((prevMessages) => [...prevMessages, data]);
+
+        // Emit the new message to the socket
+        if (socketRef.current) {
+          socketRef.current.emit("new message", data);
+        }
       } catch (err) {
         alert("Error sending message");
       }
@@ -71,12 +81,26 @@ function ChatBox() {
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
   };
-  // useEffect(()=>{
-  //   console.log('User data being sent to socket:', user);
-  //   socket = io(endpoint);
-  //   socket.emit("setup",user);
-  //   socket.on("connection",()=>setsocketconnected(true));
-  // },[])
+
+  useEffect(() => {
+    if (user && !socketRef.current) {
+      socketRef.current = io(endpoint);
+      socketRef.current.emit("setup", user);
+      socketRef.current.on("connection", () => {
+        console.log("Socket connected");
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (socketRef.current) {
+      socketRef.current.on("message received", (newmessage) => {
+        if (selectedChat && selectedChat._id === newmessage.chat._id) {
+          setMessages((prevMessages) => [...prevMessages, newmessage]);
+        }
+      });
+    }
+  }, [selectedChat]);
 
   return (
     <div className="ml-[30rem] top-[4rem] h-lvh bg-blue-200">
@@ -95,10 +119,8 @@ function ChatBox() {
           </div>
 
           <div className="h-[400px] w-full mt-[5rem]">
-              
             <Scrollbars autoHide autoHideTimeout={1000} autoHideDuration={200} className="mt-[2rem]">
               <div className="p-4">
-                
                 {messages.map((u) => (
                   <div
                     key={u._id}
@@ -109,22 +131,20 @@ function ChatBox() {
                     } w-fit p-2 rounded-md`}
                   >
                     {u.content}
-                    
                   </div>
                 ))}
-                
               </div>
             </Scrollbars>
           </div>
 
           <form action="" onKeyDown={sendMessage} className="">
             <div className=" fixed ml-[4rem] top-[40rem] border border-black w-[60%]">
-            <Input
-              className="  placeholder:text-black  "
-              placeholder="Enter message here"
-              onChange={typingHandler}
-              value={newMessage}
-            />
+              <Input
+                className="  placeholder:text-black  "
+                placeholder="Enter message here"
+                onChange={typingHandler}
+                value={newMessage}
+              />
             </div>
           </form>
         </div>
