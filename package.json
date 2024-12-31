@@ -5,7 +5,7 @@
   "node": "18.19.1"
 },
   "scripts": {
-     "render-postbuild": "npm install --prefix my-app --production=false  && npm run build",
+     "render-postbuild": "npm install --prefix my-app --production=false && cd /opt/render/project/src/my-app && npm run build",
     "install-all": "npm install --prefix my-app && npm install --prefix backend",
     "build": "npm run build-client && npm run build-server",
       "build-client": "npm --prefix my-app install && npm --prefix my-app run build",
