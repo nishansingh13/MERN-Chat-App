@@ -138,16 +138,20 @@ function ChatBox() {
             </Scrollbars>
           </div>
 
-          <form action="" onKeyDown={sendMessage} className="">
-            <div className=" fixed ml-[4rem] top-[40rem] border border-black w-[60%]">
-              <Input
-                className="  placeholder:text-black  "
-                placeholder="Enter message here"
-                onChange={typingHandler}
-                value={newMessage}
-              />
-            </div>
-          </form>
+          <div className="flex items-center">
+  <form action="" onKeyDown={sendMessage} className="w-[60rem]">
+    <div>
+      <Input
+        className="placeholder:text-black border-black"
+        placeholder="Enter message here"
+        onChange={typingHandler}
+        value={newMessage}
+      />
+    </div>
+    {istyping && <div className="text-sm text-gray-500">User is typing...</div>}
+  </form>
+</div>
+
         </div>
       )}
     </div>

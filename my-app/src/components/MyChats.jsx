@@ -9,10 +9,18 @@ import { Plus } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import AppSidebar from "./supports/AppSidebar";
-import { MessageSquareMoreIcon , LogOut ,User2  } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useMediaQuery } from "react-responsive";
 
-function MyChats({open,setOpen}) {
+import { MessageSquareMoreIcon , LogOut ,User2  } from "lucide-react";
+
+import { Loader2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+
+function MyChats({open,setOpen,showchat,showsection,setshowchat}) {
+  const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
+const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
+ 
   const {
     selectedChat,
     setSelectedChat,
@@ -76,18 +84,8 @@ function MyChats({open,setOpen}) {
   return (
     <>  
     
-      <div className="fixed bg-[#2E2E2E] w-[5rem] h-lvh flex flex-col justify-between ">
-        {/* <div className=" m-5 cursor-pointer "> */}
-        <div>
-          <div>  <MessageSquareMoreIcon className="w-8 h-8 text-green-400 m-5"/> </div>
-          <div><User2 className="text-white border border-black w-8 h-8 p-1 rounded-full bg-black mx-5 my-[3rem] "/></div>
-          </div>
-        <div><LogOut className="text-white m-5" /></div>
-
-      
-        
-      </div>
-      <div className="bg-white text-black fixed w-[20rem] ml-[5rem] h-lvh">
+  
+      <div className={`bg-white text-black fixed   w-[20rem] ml-[5rem] h-lvh `}>
         <div>
           <div className="flex justify-between mx-6 my-3">
             <div className="text-[1.8rem]">Chats</div>
@@ -126,11 +124,12 @@ function MyChats({open,setOpen}) {
               {filteredChats.map((chat) => {
                 return (
                   <div
-                    key={chat._id}
+                    key={chat._id} 
                     className={`cursor-pointer pl-2 ${
                       selectedChat === chat ? "bg-green-800 text-white" : "bg-gray-50"
                     }`}
-                    onClick={() => setSelectedChat(chat)}
+                  
+                    onClick={() => {setSelectedChat(chat) ; {isMobile?setshowchat(!showchat):""} }}
                   >
                     <div className="pl-[1rem] text-[0.9rem]">
                       {chat.isGroupChat ? (

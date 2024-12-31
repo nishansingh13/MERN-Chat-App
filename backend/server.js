@@ -7,6 +7,8 @@ const sendotp = require("./routes/sendotp");
 const userRoutes = require("./routes/userroutes");
 const connectDB = require("./config/db");
 const mongoose = require("mongoose");
+const path = require('path');
+
 const messageroutes = require("./routes/messageroutes");
 dotenv.config();
 connectDB();
@@ -20,46 +22,76 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/api/user", userRoutes);
-app.use("/send-otp",sendotp);
+app.use("/send-otp", sendotp);
 
 // Use routes
+app.use("/api/chat", chatroute);
+app.use("/api/message", messageroutes);
 
-app.use("/api/chat",chatroute);
-app.use("/api/message",messageroutes);
-app.get("/",(req,res)=>{
-  res.send("working");
-})
-app.use('/mdata',async(req,res)=>{
+app.use('/mdata', async (req, res) => {
     const data = await User.find({});
     res.json(data);
-})
+});
+
+/*--------------------------------- DEPLOYMENT -------------------------*/
+const __dirname1 = path.resolve();
+if (process.env.NODE_ENV === "production") {
+    console.log("Production mode: Serving static files");
+
+    // Correct path to the `dist` folder located outside `backend`
+    app.use(express.static(path.join(__dirname1, "../my-app/dist")));
+
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname1, "../my-app/dist/index.html"));
+    });
+} else {
+    console.log("Development mode: API is running");
+    app.get("/", (req, res) => {
+        res.send("API RUNNING");
+    });
+}
+
+/*--------------------------------- DEPLOYMENT -------------------------*/
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-  console.log(`Server running on http://192.168.1.9:${PORT}`.yellow.bold);
+    console.log(`Server running on http://192.168.1.9:${PORT}`.yellow.bold);
 });
-const io = require("socket.io")(server,{
-  pingTimeout : 60000,
-  cors:{
-    origin : "http://192.168.1.9:5173"
-  }
+
+const io = require("socket.io")(server, {
+    pingTimeout: 60000,
+    cors: {
+        origin: "http://192.168.1.9:5173"
+    }
 });
-io.on("connection",(socket)=>{
-    console.log("connected to socket.io");
-    socket.on('setup',(userdata)=>{
-      socket.join(userdata._id);
-      //here
-      socket.emit("connected");
-    })
-    socket.on('join chat',(room)=>{
-      socket.join(room);
-      console.log("user room joind "+room);
-    })
-    socket.on("new message",(newmessage)=>{
-      var chat = newmessage.chat;
-      if(!chat.users) return console.log("chat.users not defined");
-      chat.users.forEach(user=>{
-        if(user._id == newmessage.sender._id) return;
-        socket.in(user._id).emit("message received",newmessage);
-      })
-    })
+
+io.on("connection", (socket) => {
+    console.log("Connected to socket.io");
+
+    socket.on('setup', (userdata) => {
+        socket.join(userdata._id);
+        socket.emit("connected");
+    });
+
+    socket.on('join chat', (room) => {
+        socket.join(room);
+        console.log("User joined room: " + room);
+    });
+
+    socket.on("typing", (room) => socket.in(room).emit("typing"));
+    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+    socket.on("new message", (newmessage) => {
+        var chat = newmessage.chat;
+        if (!chat.users) return console.log("chat.users not defined");
+
+        chat.users.forEach(user => {
+            if (user._id === newmessage.sender._id) return;
+            socket.in(user._id).emit("message received", newmessage);
+        });
+    });
+
+    socket.off("setup", () => {
+        console.log("User disconnected");
+        socket.leave(userdata._id);
+    });
 });
