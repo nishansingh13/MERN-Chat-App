@@ -2,13 +2,13 @@
   "name": "chatting-app",
   "version": "1.0.0",
   "engines": {
-  "node": "18.19.1"
-},
+    "node": "18.19.1"
+  },
   "scripts": {
-     "render-postbuild": "npm install --prefix my-app --production=false && cd /opt/render/project/src/my-app && npm run build",
+    "render-postbuild": "npm install --prefix my-app --production=false && cd /opt/render/project/src/my-app && npm run build",
     "install-all": "npm install --prefix my-app && npm install --prefix backend",
-    "build": "npm run build-client && npm run build-server",
-      "build-client": "npm --prefix my-app install && npm --prefix my-app run build",
+    "build": "npm run build-client && npm run build-server && mkdir -p public && cp ./my-app/dist/index.html public/",
+    "build-client": "npm --prefix my-app install && npm --prefix my-app run build",
     "build-server": "echo 'Backend does not need building'",
     "start": "NODE_ENV=production node backend/server.js",
     "dev": "concurrently \"npm start --prefix my-app\" \"npm run dev-server --prefix backend\"",
