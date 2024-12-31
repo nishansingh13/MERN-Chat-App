@@ -59,15 +59,19 @@ if (process.env.NODE_ENV === "production") {
 /*--------------------------------- DEPLOYMENT -------------------------*/
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
-    console.log(`Server running on http://192.168.1.9:${PORT}`.yellow.bold);
+    console.log(`Server running on :${PORT}`.yellow.bold);
 });
 
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
-        origin: "http://192.168.1.9:5173"
-    }
+        origin: "*", // your frontend URL
+        methods: ["GET", "POST"], // Specify allowed methods
+        allowedHeaders: ["Content-Type"], // Specify allowed headers if needed
+        credentials: true, // Allow credentials like cookies to be sent
+    },
 });
+
 
 io.on("connection", (socket) => {
     console.log("Connected to socket.io");
