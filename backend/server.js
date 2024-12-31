@@ -55,7 +55,9 @@ if (process.env.NODE_ENV === "production") {
         res.send("API RUNNING");
     });
 }
-
+app.use("/ok",(req,res)=>{
+    res.send("yeah u can do it");
+})
 /*--------------------------------- DEPLOYMENT -------------------------*/
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
