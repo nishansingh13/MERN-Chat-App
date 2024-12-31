@@ -4,7 +4,7 @@
   "scripts": {
     "install-all": "npm install --prefix my-app && npm install --prefix backend",
     "build": "npm run build-client && npm run build-server",
-    "build-client": "npm --prefix my-app run build",
+      "build-client": "npm --prefix my-app install && npm --prefix my-app run build",
     "build-server": "echo 'Backend does not need building'",
     "start": "NODE_ENV=production node backend/server.js",
     "dev": "concurrently \"npm start --prefix my-app\" \"npm run dev-server --prefix backend\"",
