@@ -1,6 +1,9 @@
 {
   "name": "chatting-app",
   "version": "1.0.0",
+  "engines": {
+  "node": "18.19.1"
+},
   "scripts": {
     "install-all": "npm install --prefix my-app && npm install --prefix backend",
     "build": "npm run build-client && npm run build-server",
