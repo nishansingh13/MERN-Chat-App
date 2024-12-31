@@ -27,7 +27,7 @@ function Login(){
     const navigate = useNavigate();
     const hlogin = async (e) => {
       e.preventDefault();
-      console.log({ email, password });
+      console.log("not anymore");
     
       if (!email || !password) {
         alert("Please fill all fields");
