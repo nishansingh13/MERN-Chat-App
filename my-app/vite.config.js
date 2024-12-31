@@ -11,6 +11,5 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist', // This ensures the build output goes to the 'dist' folder
-  },
-  base: '/my-app/dist',
+  }
 })
