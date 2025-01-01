@@ -242,7 +242,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               ))}
             </div>
             <div className="w-[4rem] h-[2rem]">
-              {!isTyping && (
+              {isTyping && (
                 <Lottie
                   animationData={typinganimation}
                   loop={true}
