@@ -24,9 +24,10 @@ const logout = ()=>{
 
 }
   return (
-    <div className="bg-blue-200 h-[41.5rem] md:h-lvh overflow-hidden">
+    <div className={``}>
+    <div className="h-[41.5rem] md:h-lvh overflow-hidden">
       <div
-        className={`fixed bg-[#2E2E2E] w-[5rem] h-[100%] ${leftbar ? "hidden" : ""} flex flex-col justify-between`}
+        className={`fixed bg-[#2E2E2E] w-[5rem] h-[100%]  ${leftbar ? "hidden" : ""} ${isMobile?"hidden":""} flex flex-col justify-between`}
       >
         <div>
           <div>
@@ -68,6 +69,7 @@ const logout = ()=>{
       )}
 
       <Slider open={open} setOpen={setOpen} showsection={showsection} showchat={showchat} />
+    </div>
     </div>
   );
 }

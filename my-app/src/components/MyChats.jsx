@@ -46,7 +46,7 @@ const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
+      const { data } = await axios.get("http://192.168.1.9:5000/api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {
@@ -69,23 +69,29 @@ const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   }, [user]); // Fetch chats when the user state changes
 
   // Filter chats based on the search query
-  const filteredChats = chats.filter((chat) => {
-    if (chat.isGroupChat) {
-      return chat.chatName.toLowerCase().includes(searchQuery.toLowerCase());
-    } else {
-      const userName =
-        chat.users[0]._id === user._id
-          ? chat.users[1].name
-          : chat.users[0].name;
-      return userName.toLowerCase().includes(searchQuery.toLowerCase());
-    }
-  });
+  // Filter chats based on the search query
+const filteredChats = chats.filter((chat) => {
+  if (!user || !user._id) return false; // Skip if user is not loaded
+
+  if (chat.isGroupChat) {
+    return chat.chatName?.toLowerCase().includes(searchQuery.toLowerCase());
+  } else {
+    const userName =
+      chat.users && chat.users.length > 1
+        ? chat.users[0]._id === user._id
+          ? chat.users[1]?.name || "Unknown User"
+          : chat.users[0]?.name || "Unknown User"
+        : "Unknown Chat";
+    return userName.toLowerCase().includes(searchQuery.toLowerCase());
+  }
+});
+
 
   return (
     <>  
     
   
-      <div className={`bg-white text-black fixed   w-[20rem] ml-[5rem] h-lvh `}>
+      <div className={`bg-[#F5F6FA] text-black fixed  ${isMobile?"ml-0 w-full":""} w-[20rem] ml-[5rem] h-lvh `}>
         <div>
           <div className="flex justify-between mx-6 my-3">
             <div className="text-[1.8rem]">Chats</div>
@@ -119,47 +125,57 @@ const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
             </div>
           </div>
 
-          <div>
-            <ScrollArea className="bg-white h-lvh">
-              {filteredChats.map((chat) => {
-                return (
-                  <div
-                    key={chat._id} 
-                    className={`cursor-pointer pl-2 ${
-                      selectedChat === chat ? "bg-green-800 text-white" : "bg-gray-50"
-                    }`}
-                  
-                    onClick={() => {setSelectedChat(chat) ; {isMobile?setshowchat(!showchat):""} }}
-                  >
-                    <div className="pl-[1rem] text-[0.9rem]">
-                      {chat.isGroupChat ? (
-                        <div className="flex gap-2 my-2 py-1">
-                          <div>
-                            <MessageCircle size={30} className={`${selectedChat==chat?"text-white":"text-black"}`} />
-                          </div>
-                          <div>{chat.chatName}</div>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2 my-2 py-2">
-                          <img
-                            src={
-                              chat.users[0]._id === user._id
-                                ? chat.users[1].pic
-                                : chat.users[0].pic
-                            }
-                            className="w-[2rem] rounded-full"
-                          />
-                          <div>
-                            {chat.users[0]._id === user._id
-                              ? chat.users[1].name
-                              : chat.users[0].name}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="bg-white py-2 px-2 m-[1rem] border rounded-2xl">
+            <ScrollArea className="max-h-[34rem]">
+            {filteredChats.map((chat) => {
+  // Ensure valid users are present
+  const validUsers = chat.users?.filter((u) => u && u._id); 
+
+  if (!validUsers || validUsers.length < 2) {
+    console.warn(`Chat with ID ${chat._id} has missing users. Skipping.`);
+    return null; // Skip rendering this chat
+  }
+
+  const otherUser =
+    validUsers[0]._id === user._id ? validUsers[1] : validUsers[0];
+
+  return (
+   
+    <div 
+      key={chat._id}
+      className={`cursor-pointer pl-2 rounded-xl  ${
+        selectedChat === chat ? "bg-green-500 text-white" : "bg-gray-50"
+      }`}
+      onClick={() => {
+        setSelectedChat(chat);
+        isMobile ? setshowchat(!showchat) : "";
+      }}
+    >
+      <div className="pl-[1rem] text-[0.9rem]">
+        {chat.isGroupChat ? (
+          <div className="flex gap-2 my-2 py-1">
+            <div>
+              <MessageCircle size={30} className={`${selectedChat === chat ? "text-white" : "text-black"}`} />
+            </div>
+            <div>{chat.chatName}</div>
+          </div>
+        ) : (
+          <div className="flex gap-2 my-2 py-2">
+            <img
+              src={otherUser?.pic || "/default-avatar.png"}
+              alt="User"
+              className="w-[2rem] rounded-full"
+            />
+            <div>{otherUser?.name || "Unknown User"}</div>
+          </div>
+        )}
+      </div>
+    </div>
+   
+  );
+})}
+
+
             </ScrollArea>
           </div>
         </div>

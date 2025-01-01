@@ -17,7 +17,7 @@ import { useMediaQuery } from "react-responsive";
 var selectedChatcompare;
 
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "http://192.168.1.9:5000/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { selectedChat, user, notification, setNotification } = ChatState();
@@ -41,7 +41,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `http://192.168.1.9:5000/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -85,7 +85,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
 
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "http://192.168.1.9:5000/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id,
@@ -173,7 +173,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 
   return (
     <div
-      className={`${leftbar ? "x-75 ml-[0rem]" : "ml-[5rem]"} top-[0rem] h-[100%] md:ml-[25rem] overflow-hidden`}
+      className={`${leftbar ? " ml-[0rem]" : "ml-[5rem]"} top-[0rem] h-[100%] md:ml-[25rem] overflow-hidden`}
       style={{
         backgroundImage: `url(${image})`,
         backgroundSize: "cover",

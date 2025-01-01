@@ -23,9 +23,9 @@ router.post('/', (req, res) => {
 
   transporter.sendMail(mailOptions, (error) => {
     if (error) {
-      return res.status(500).json({ error: 'Failed to send OTP' });
+      return res.status(500).json({ error: 'Something went wrong!!' });
     }
-    res.status(200).json({ message: 'OTP sent successfully', otp });
+    res.status(200).json({message:otp});
   });
 });
 
