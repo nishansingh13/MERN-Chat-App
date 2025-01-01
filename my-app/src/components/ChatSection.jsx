@@ -3,19 +3,15 @@ import { Input } from "./ui/input";
 import axios from "axios";
 import { Scrollbars } from "react-custom-scrollbars-2";
 import { io } from "socket.io-client";
-import image from "../assets/background.jpg";
-import { Separator } from "./ui/separator";
+import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile } from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
-import { SendHorizonal } from "lucide-react";
+import { SendHorizonal,MoreVertical } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
-
-var selectedChatcompare;
-
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
   const [loading, setLoading] = useState(false);
@@ -29,7 +25,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const typingTimeoutRef = useRef(null);
-
+  const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
+  const isMobile = useMediaQuery({query:"(max-width:768px)"});  
   const fetchMessages = async () => {
     if (!selectedChat) return;
     setLoading(true);
@@ -173,115 +170,136 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 
   return (
     <div
-      className={`${leftbar ? " ml-[0rem]" : "ml-[5rem]"} top-[0rem] h-[100%] md:ml-[25rem] overflow-hidden`}
-      style={{
-        backgroundImage: `url(${image})`,
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-      }}
+      className={` top-[0rem] h-[100%] md:ml-[25rem] bg-[#F5F6FA] overflow-hidden`}
+      
     >
-      {!selectedChat ? (
-        <div className="text-black flex items-center justify-center text-[2rem] overflow-hidden">
-          YOHOHO CHATS PE CLICK KROOO!!
-        </div>
-      ) : (
-        <div className={`overflow-hidden`}>
-          <div className="relative pt-[1.5rem] pb-4 px-3">
-            <div className="absolute inset-0 bg-[transparent] backdrop-blur-sm z-0 " />
-            <div className="relative flex items-center justify-between">
-              <div className="flex">
-                <img
-                  src={`${!selectedChat.isGroupChat ? getChatName().pic : ""}`}
-                  className="w-[3rem] rounded-full p-1"
+    {
+  !selectedChat ? (
+    <div className="text-black flex items-center justify-center text-[2rem] overflow-hidden">
+      YOHOHO CHATS PE CLICK KROOO!!
+    </div>
+  ) : (
+    loading ? (
+      
+      <div className="flex justify-center items-center h-full">
+        <div><Loader2 className="animate-spin text-green-600" size={80}/></div>
+      </div>
+    ) : (
+      // The rest of your chat content here
+      <div className={`overflow-hidden `}>
+        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mr-1 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"}`}>
+          <div className="relative flex items-center justify-between ">
+            <div className="flex">
+              {isMobile && (
+                <ArrowLeftIcon
+                  className="relative top-3"
+                  onClick={() => setshowchat(!showchat)}
                 />
-                <div className="text-[1.5rem] px-2 relative top-1">
-                  {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
-                </div>
+              )}
+              <img
+                src={`${!selectedChat.isGroupChat ? getChatName().pic : ""}`}
+                className="w-[3rem] rounded-full p-1"
+              />
+              <div className="text-[1.5rem] px-2 relative top-1">
+                {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
               </div>
-              <div><Settings onClick={() => showleftbar(!leftbar)} /></div>
+            </div>
+            <div>
+              <Settings onClick={() => showleftbar(!leftbar)} />
             </div>
           </div>
+        </div>
 
-          <Separator />
-          <div className="h-[440px] w-full mt-[2rem]">
-            <Scrollbars
-              autoHide
-              autoHideTimeout={1000}
-              autoHideDuration={200}
-              className="mt-[2rem]"
-              ref={scrollRef}
-            >
-              <div className="p-4">
-                {messages.map((u) => (
-                  <div
-                    key={u._id}
-                    className={`${
+        <Separator className={`${isMobile ? "relative top-4" : ""}`} />
+
+        <div className={`w-full ${isMobile ? "mt-0 h-[540px]" : "mt-[2rem] h-[540px]"}`}>
+          <Scrollbars
+            autoHide
+            autoHideTimeout={1000}
+            autoHideDuration={200}
+            className="mt-[1rem]"
+            ref={scrollRef}
+          >
+            <div className="p-4">
+              {messages.map((u) => (
+                <div
+                  key={u._id}
+                  className={`${
+                    u.sender._id === user._id
+                      ? "bg-green-100 my-2 ml-auto text-left"
+                      : "bg-blue-300 my-2 mr-auto text-left"
+                  } w-fit max-w-[35%] break-words p-2 rounded-md`}
+                  style={{
+                    borderRadius:
                       u.sender._id === user._id
-                        ? "bg-green-100 my-2 ml-auto text-left"
-                        : "bg-blue-300 my-2 mr-auto text-left"
-                    } w-fit max-w-[35%] break-words p-2 rounded-md`}
-                    style={{
-                      borderRadius:
-                        u.sender._id === user._id
-                          ? "10px 10px 0 10px"
-                          : "10px 10px 10px 0",
-                    }}
-                  >
-                    {u.content}
-                  </div>
-                ))}
-              </div>
-            </Scrollbars>
-          </div>
+                        ? "10px 10px 0 10px"
+                        : "10px 10px 10px 0",
+                  }}
+                >
+                  {u.content}
+                </div>
+              ))}
+            </div>
+            <div className="w-[4rem] h-[2rem]">
+              {!isTyping && (
+                <Lottie
+                  animationData={typinganimation}
+                  loop={true}
+                  autoplay={true}
+                  className={`w-[5rem] h-[4rem] relative ${isMobile ? "bottom-[2rem]" : "bottom-[2rem]"} left-1`}
+                />
+              )}
+            </div>
+          </Scrollbars>
+        </div>
 
-          {showEmojiPicker && (
-            <div className="absolute bottom-[80px] left-1/2 transform -translate-x-1/2">
-              <EmojiPicker onEmojiClick={(emoji) => {
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <div className="absolute bottom-[80px] left-1/2 transform -translate-x-1/2">
+            <EmojiPicker
+              onEmojiClick={(emoji) => {
                 setNewMessage(newMessage + emoji.emoji);
                 setShowEmojiPicker(false);
-              }} />
-            </div>
-          )}
-
-          {isTyping && (
-            <Lottie
-              animationData={typinganimation}
-              loop={true}
-              autoplay={true}
-              className="w-[5rem] h-[5rem] relative bottom-[1rem] left-1"
+              }}
             />
-          )}
-
-          <div className="border border-gray-300 my-1"></div>
-          <div className="flex md:w-[100%] top-[90%] bg-[#F8F8F8] justify-between py-5 mt-[rem]">
-            <div className="flex gap-5">
-              <button
-                type="button"
-                className="bottom-[120px] left-[50%] transform -translate-x-1/2"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              >
-                <Smile className="relative left-5" />
-              </button>
-
-              <form onSubmit={sendMessage} className="flex gap-2 w-full">
-                <Input
-                  className="md:w-[60rem] placeholder:text-black border-black w-[14rem] bg-white border-none"
-                  placeholder="Type your message here..."
-                  onChange={typingHandler}
-                  value={newMessage}
-                />
-                <button
-                  type="submit"
-                  className="relative   md:right-[-1rem] top-[-0.1rem] cursor-pointer border bg-green-300 rounded-sm w-[2.5rem] h-[2.5rem] p-1"
-                >
-                  <SendHorizonal />
-                </button>
-              </form>
-            </div>
           </div>
+        )}
+
+        <div
+          className={`border border-gray-300 my-1 bg-gray-200 h-lvh ${isDesktop ? "mx-4 rounded-full h-[3.9rem] outl" : ""}`}
+        >
+          <form onSubmit={sendMessage} className="flex gap-5 ">
+            <button
+              type="button"
+              className="bottom-[120px] left-[50%] transform -translate-x-1/2"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            >
+              <Smile className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"}`} />
+            </button>
+            <Input
+              className={`md:w-[60rem] rounded-3xl ${isDesktop ? "mt-3 bg-gray-200" : "mt-1 bg-white"} flex-1 placeholder:text-black`}
+              placeholder="Type your message here..."
+              onChange={typingHandler}
+              value={newMessage}
+              style={{
+                border: "none",
+                outline: "none",
+                boxShadow: "none",
+              }}
+            />
+            <button type="submit">
+              <SendHorizonal
+                className={`border bg-green-600 p-2 rounded-full relative ${isMobile ? "top-1" : "top-2"} text-white right-2 mt-[-0.3rem]`}
+                size={isMobile ? 35 : 40}
+              />
+            </button>
+          </form>
         </div>
-      )}
+      </div>
+    )
+  )
+}
+
     </div>
   );
 }
