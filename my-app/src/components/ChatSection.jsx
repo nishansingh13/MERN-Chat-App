@@ -12,6 +12,7 @@ import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
 import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
+var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
   const [loading, setLoading] = useState(false);
