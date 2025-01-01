@@ -265,11 +265,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             />
           </div>
         )}
-
-        <div
-          className={`border border-gray-300 my-1 bg-gray-200 h-lvh ${isDesktop ? "mx-4 rounded-full h-[3.9rem] outl" : ""}`}
-        >
-          <form onSubmit={sendMessage} className="flex gap-5 ">
+  <form onSubmit={sendMessage} className="flex gap-5 ">
             <button
               type="button"
               className="bottom-[120px] left-[50%] transform -translate-x-1/2"
@@ -295,7 +291,9 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               />
             </button>
           </form>
-        </div>
+       
+          
+       
       </div>
     )
   )
