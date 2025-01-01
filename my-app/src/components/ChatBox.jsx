@@ -23,7 +23,7 @@ function ChatBox() {
       };
 
       const { data } = await axios.get(
-        `http://192.168.1.9:5000/api/message/${selectedChat._id}`,
+        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -55,7 +55,7 @@ function ChatBox() {
         };
 
         const { data } = await axios.post(
-          "http://192.168.1.9:5000/api/message",
+          "https://mern-chat-app-5-lyff.onrender.com/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id,

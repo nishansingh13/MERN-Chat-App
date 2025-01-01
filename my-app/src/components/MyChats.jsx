@@ -46,7 +46,7 @@ const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("http://192.168.1.9:5000/api/chat", config);
+      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {

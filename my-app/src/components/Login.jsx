@@ -82,7 +82,7 @@ function Login(){
     
       try {
         setLoading(true);
-        const res = await axios.post("http://192.168.1.9:5000/send-otp", { email });
+        const res = await axios.post("https://mern-chat-app-5-lyff.onrender.com/send-otp", { email });
         setotpstatus(true);
         if (res.status === 200) {
           toast({
@@ -114,7 +114,7 @@ function Login(){
         setLoading(true);
         // main-url = https://mern-chat-app-5-lyff.onrender.com/api
         const login_data ={email,password};
-        const res = await axios.post("http://192.168.1.9:5000/api/user/login", login_data);
+        const res = await axios.post("https://mern-chat-app-5-lyff.onrender.com/api/user/login", login_data);
     
         if (res.status === 200) {
           console.log("Login successful");
@@ -173,7 +173,7 @@ function Login(){
     const data = { name, email,password};
 
       try {
-        const response = await axios.post("http://192.168.1.9:5000/api/user", data);
+        const response = await axios.post("https://mern-chat-app-5-lyff.onrender.com/api/user", data);
         if(response.status==201){
           
           toast({

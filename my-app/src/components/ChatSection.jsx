@@ -17,7 +17,7 @@ import { useMediaQuery } from "react-responsive";
 var selectedChatcompare;
 
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "http://192.168.1.9:5000/";
+  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { selectedChat, user, notification, setNotification } = ChatState();
@@ -41,7 +41,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `http://192.168.1.9:5000/api/message/${selectedChat._id}`,
+        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -85,7 +85,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
 
         const { data } = await axios.post(
-          "http://192.168.1.9:5000/api/message",
+          "https://mern-chat-app-5-lyff.onrender.com/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id,
