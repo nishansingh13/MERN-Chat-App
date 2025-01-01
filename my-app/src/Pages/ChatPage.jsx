@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from "react";
-import DropDown from "@/components/supports/DropDown";
-import AppSidebar from "@/components/supports/AppSidebar";
+import React, { useState } from "react";
 import { ChatState } from "@/Context/ChatProvider";
 import MyChats from "@/components/MyChats";
-import { LogOut, MessageCircle, MessageSquareMoreIcon, Search, User2 } from "lucide-react";
 import Slider from "@/components/supports/Slider";
-import ChatBox from "@/components/ChatBox";
 import ChatSection from "@/components/ChatSection";
 import { useMediaQuery } from "react-responsive";
-import { useNavigate } from "react-router-dom";
+
 
 
 function ChatPage() {

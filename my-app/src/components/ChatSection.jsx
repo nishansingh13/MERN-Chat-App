@@ -10,7 +10,7 @@ import { Smile ,ArrowLeftIcon, Loader2} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
-import { SendHorizonal,MoreVertical } from "lucide-react";
+import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";

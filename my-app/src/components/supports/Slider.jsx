@@ -11,27 +11,16 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { SkeletonDemo } from "./Skeleton";
-import { cn } from "@/lib/utils"; // Assuming you placed the `cn` function in utils
-import { ToastAction } from "@radix-ui/react-toast";
 import { Input } from "@/components/ui/input"
 import { Button } from "../ui/button";
-import { toast } from "@/hooks/use-toast";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ChatState } from "@/Context/ChatProvider";
-import { Skeleton } from "../ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";  // Import ScrollArea component
+import { ScrollArea } from "@/components/ui/scroll-area"; 
 
 function Slider({ open, setOpen }) {
-  const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState();
+  const { user, setSelectedChat, chats, setChats } = ChatState();
   const [data, setdata] = useState([]);
-  const items = [
-    { title: "Home", url: "#", icon: Home },
-    { title: "Inbox", url: "#", icon: Inbox },
-    { title: "Calendar", url: "#", icon: Calendar },
-    { title: "Search", url: "#", icon: Search },
-    { title: "Settings", url: "#", icon: Settings },
-  ];
 
   const { toast } = useToast();
   const [loading, setloading] = useState(false);

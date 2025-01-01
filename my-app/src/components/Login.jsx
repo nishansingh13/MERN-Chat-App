@@ -1,13 +1,9 @@
 import React from 'react';
-import { useState,useEffect} from 'react';
+import { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
-import close from '../assets/close.png';
-import open from '../assets/open.png';
 import google from '../assets/google.png';
 import fb from '../assets/fb.png';
 import twit from '../assets/twitter.png';
-import vid from '../assets/arrow.webm';
 import axios from 'axios';
 import { EyeIcon } from 'lucide-react';
 import { EyeClosed } from 'lucide-react';
@@ -22,10 +18,6 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { ChatState } from '@/Context/ChatProvider';
-
-
-// import mongoose from 'mongoose';
 function Login(){
   const isIpad = useMediaQuery({query:"(max-width:1500px)"})
    const  isMobile = useMediaQuery({ query: "(max-width: 1000px)" })

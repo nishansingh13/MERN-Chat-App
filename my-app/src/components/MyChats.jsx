@@ -7,17 +7,12 @@ import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 import { MoreVertical} from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
-import { Separator } from "./ui/separator";
-import AppSidebar from "./supports/AppSidebar";
 import { useMediaQuery } from "react-responsive";
 
 
-import { MessageSquareMoreIcon , LogOut ,User2  } from "lucide-react";
-
-import { Loader2 } from "lucide-react";
+import {   LogOut   } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "./ui/skeleton";
 
 function MyChats({open,setOpen,showchat,showsection,setshowchat}) {
