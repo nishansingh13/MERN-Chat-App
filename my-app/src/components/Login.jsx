@@ -255,16 +255,16 @@ function Login(){
           <div className={`border rounded-2xl ${!isMobile?"w-[70%]":"w-[100%]"} h-[100%] mx-[1rem] bg-white flex items-center justify-center `}>
             <div className={` ${isMobile?"w-[90%]":"w-[50%]"} `}>
             <div className=''>
-              <div className={` relative ${status?"bottom-[2rem]":"bottom-[4rem]"} ${isMobile?"text-[1.2rem]":"text-[1.4rem]"} flex flex-col items-center justify-center `}>
+              <div className={` relative ${status?"bottom-[1rem]":"bottom-[4rem]"} ${isMobile?"text-[1.2rem]":"text-[1.4rem]"} flex flex-col items-center justify-center `}>
               <div className=''>Welcome Back</div>
               <div className='text-[80%] text-gray-500'>Sign in to your account</div>
               </div>
               <div className="m-[1.5rem] text-[1.5rem] justify-between flex font-semibold">
                 {status ? 'Create your account' : 'Login to your Account'}
                 <div className={`${!imageloading ? "flex" : "flex-col"} items-center justify-center p-4`}>
-      <div className="py-2 rounded-md">
+  {status &&    <div className="py-2 rounded-md">
         {/* Custom label for the file input */}
-        <label htmlFor="file-input" className="relative cursor-pointer">
+        <label htmlFor="file-input" className="relative cursor-pointer bottom-5">
           <img
             src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
             className='w-[3rem] h-[3rem] rounded-full relative mx-[2rem]'
@@ -282,7 +282,7 @@ function Login(){
          
           <Loader2 className='text-green-600 animate-spin hover:bg-green-700 mx-2' />
         }
-      </div>
+      </div>}
     </div>
               </div>
               <form
@@ -382,7 +382,7 @@ function Login(){
         </div>
       )
     ) : (
-      <div className='flex w-[80%] mx-auto justify-between my-2 '>
+      <div className={` ${!isMobile ? "flex":""} w-[80%] mx-auto justify-between my-2 `}>
         <InputOTP
   maxLength={6} onChange={(e)=>setDataPass(e)}  
  
