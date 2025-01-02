@@ -2,7 +2,7 @@ import { ChatState } from "@/Context/ChatProvider";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Groupchat from "./supports/Groupchat"; // Import Groupchat component
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, MessageSquareMore, MessageSquareText } from "lucide-react";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 import { MoreVertical} from "lucide-react";
@@ -25,7 +25,7 @@ function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,set
   
   }
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
-const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
+  const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
  
   const {
     selectedChat,
@@ -103,10 +103,13 @@ const filteredChats = chats.filter((chat) => {
         
         <div>
           <div className="flex justify-between mx-6 my-3">
-            <div className="text-[1.8rem]">Chats</div>
+            <div className="text-[1.8rem] text-green-600 flex font-semibold gap-2">
+              <div><MessageSquareText className="relative top-3"/></div>
+              <div>Chatify</div>
+            </div>
             <DropdownMenu >
               <DropdownMenuTrigger >
-                <MoreVertical className="bg-green-600 rounded-sm p-1 mt-2" />
+                <MoreVertical className="bg-green-500 rounded-sm p-1 " />
               </DropdownMenuTrigger>
               <DropdownMenuContent >
                 <DropdownMenuLabel>CHATIFY</DropdownMenuLabel>
@@ -116,7 +119,6 @@ const filteredChats = chats.filter((chat) => {
                 <DropdownMenuItem onClick={() => setIsGroupChatOpen(true)} className="cursor-pointer">
                   Create a group
                 </DropdownMenuItem>
-                
                 <DropdownMenuItem onClick={logout} className="cursor-pointer">
                   <div className="flex gap-1 cursor-pointer"> 
                     <LogOut size={20} onClick={logout}/>

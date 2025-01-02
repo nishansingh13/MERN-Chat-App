@@ -5,6 +5,7 @@ import Slider from "@/components/supports/Slider";
 import ChatSection from "@/components/ChatSection";
 import { useMediaQuery } from "react-responsive";
 import ProfileSection from "@/components/supports/ProfileSection";
+import axios from "axios";
 
 function ChatPage() {
   const { user } = ChatState();
@@ -15,6 +16,8 @@ function ChatPage() {
   const [showchat, setshowchat] = useState(false);
   const [leftbar, showleftbar] = useState(false);
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
+ 
+  
 
   return (
     <div className={`${!isMobile && "bg-green-600"}`}>
@@ -62,7 +65,10 @@ function ChatPage() {
         </div>
       </div>
     </div>
+    
+  
   );
+
 }
 
 export default ChatPage;

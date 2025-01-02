@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import google from '../assets/google.png';
 import fb from '../assets/fb.png';
 import twit from '../assets/twitter.png';
 import axios from 'axios';
-import { EyeIcon } from 'lucide-react';
+import { Edit2, EyeIcon } from 'lucide-react';
 import { EyeClosed } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { useMediaQuery } from 'react-responsive';
@@ -18,10 +18,14 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { Label } from './ui/label';
+import { Button } from './ui/button';
+import { ChatState } from '@/Context/ChatProvider';
 function Login(){
   const isIpad = useMediaQuery({query:"(max-width:1500px)"})
    const  isMobile = useMediaQuery({ query: "(max-width: 1000px)" })
    const ismiddle = useMediaQuery({query:"(max-width:1527px)"})
+   const {user} =ChatState();
     const [showPass, setShowPass] = useState(false);
     const [status, setLogin] = useState(false);
     const [email, setEmail] = useState("");
@@ -36,8 +40,36 @@ function Login(){
     const [cotp,setcotp] = useState(null);
     const [loading,setLoading] = useState(false);
     const [verifyloading,setverifyloading] = useState(false);
-   
+    const [imageloading,setimageloading] = useState(false);
     const navigate = useNavigate();
+    const [pic,setimage] = useState("");
+    const submitImage = async (file) => {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "ml_default");
+      data.append("cloud_name", "dqsx8yzbs");
+  
+      setimageloading(true);
+      try {
+        const response = await axios.post(
+          "https://api.cloudinary.com/v1_1/dqsx8yzbs/image/upload",
+          data
+        );
+        console.log("Upload successful:", response.data);
+        setimage(response.data.secure_url); // Update image URL on successful upload
+      } catch (err) {
+        console.error("Error uploading the image:", err);
+      }
+      setimageloading(false);
+    };
+  
+    // Handle image input change (triggered by clicking the image)
+    const handleImageChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        submitImage(file); // Call the function to upload the image
+      }
+    };
     const verify = async(query)=>{  
       
       if (query.length !== 6) {
@@ -105,6 +137,7 @@ function Login(){
       try {
         setLoading(true);
         // main-url = https://mern-chat-app-5-lyff.onrender.com/api
+        
         const login_data ={email,password};
         const res = await axios.post("http://192.168.1.9:5000/api/user/login", login_data);
     
@@ -160,9 +193,10 @@ function Login(){
       alert("Passwords do not match");
       return;
     }
-    
-   
-    const data = { name, email,password};
+  
+    const data = { name, email,password ,pic}
+    console.log(pic);
+  
 
       try {
         const response = await axios.post("http://192.168.1.9:5000/api/user", data);
@@ -203,6 +237,7 @@ function Login(){
     
   }
   
+  
     return (
         <div className=' py-[2rem] bg-green-600 h-lvh flex justify-evenly '>
           <div className={`bg-green-600 w-[30%] mx-2 ${isMobile?"hidden":"w-[30%]"}`}>
@@ -223,8 +258,31 @@ function Login(){
               <div className=''>Welcome Back</div>
               <div className='text-[80%] text-gray-500'>Sign in to your account</div>
               </div>
-              <div className="m-[1.5rem] text-[1.5rem] font-semibold">
+              <div className="m-[1.5rem] text-[1.5rem] justify-between flex font-semibold">
                 {status ? 'Create your account' : 'Login to your Account'}
+                <div className={`${!imageloading ? "flex" : "flex-col"} items-center justify-center p-4`}>
+      <div className="py-2 rounded-md">
+        {/* Custom label for the file input */}
+        <label htmlFor="file-input" className="relative cursor-pointer">
+          <img
+            src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+            className='w-[3rem] h-[3rem] rounded-full relative mx-[2rem]'
+            alt="avatar"
+          />
+          <Edit2 className='w-[1.3rem] relative left-[4rem] bottom-5 text-gray-500' />
+        </label>
+        <input
+          id="file-input"
+          type="file"
+          className="hidden"
+          onChange={handleImageChange} // Trigger file selection when image is clicked
+        />
+        {imageloading &&
+         
+          <Loader2 className='text-green-600 animate-spin hover:bg-green-700 mx-2' />
+        }
+      </div>
+    </div>
               </div>
               <form
                 onSubmit={status ? (e) => sendotp(e) : (e) => hlogin(e)}
@@ -291,7 +349,8 @@ function Login(){
                     </div>
                   ) : (
                     ''
-                  )}
+                  )} 
+
                   
                   {!status ? (
                     <div

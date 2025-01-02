@@ -54,4 +54,24 @@ const allUsers = asyncHandler(async(req,res)=>{
         res.send(users);
         // res.send(users);
 })
-module.exports = {registeruser,authUser,allUsers};
+const changename = asyncHandler(async(req, res) => {
+    const { id, updatedname } = req.body;
+    
+    
+    const user = await User.findByIdAndUpdate(id, { name: updatedname }, { new: true });
+
+ 
+    if (user) {
+        res.status(200).json({ 
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            pic: user.pic 
+        });
+    } else {
+        res.status(404).json({ message: "User not found" });
+        throw new Error("User not found");
+    }
+});
+
+module.exports = {registeruser,authUser,allUsers,changename};

@@ -1,4 +1,4 @@
-import {  X , LucideEdit2, Edit2  } from "lucide-react";
+import {  X , LucideEdit2, Edit2, Check  } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Sidebar,
@@ -17,15 +17,15 @@ import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ChatState } from "@/Context/ChatProvider";
 import { ScrollArea } from "@/components/ui/scroll-area"; 
-
 function ProfileSection({  showprofile,setshowprofile}) {
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const { user, setSelectedChat, chats, setChats,setUser } = ChatState();
+  const [updatedname,setupdatedname] = useState("");
   const [data, setdata] = useState([]);
   const [profilepic,setprofilepic] = useState("");
   const { toast } = useToast();
   const [loading, setloading] = useState(false);
   const [chatloading, setchatloading] = useState(false);
-  const [search, setsearch] = useState("");
+  const [nameupdating, setnameupdating] = useState("");
   const [email,setemail] = useState("");
   const[name,setname] = useState("");
     useEffect(()=>{
@@ -35,7 +35,32 @@ function ProfileSection({  showprofile,setshowprofile}) {
         setemail(user.email);
         }
     })
+    useEffect(()=>{
+      console.log(updatedname);
+    })
+    const changename = async()=>{
+        if(updatedname!="" && user._id){
+          const id = user._id;
+          const data = {id,updatedname};
+          try{
+             const res = await axios.put("http://192.168.1.9:5000/api/user/change-name",data);
+             const updatedUser = { ...user, name: updatedname };
+             if(res.status==200){
+              setname(updatedname);
+              setUser(updatedUser);
+                toast({
+                  title:"Username updated"
+                },1000)
+             }
+        }catch(err){
+          console.log(err);
+        }
+      }
+        else{
+          console.log("not working")
 
+        }
+    }
   return (
     <SidebarProvider className={`overflow-hidden ${!showprofile && "hidden"} `}>
     <Sidebar
@@ -67,9 +92,19 @@ function ProfileSection({  showprofile,setshowprofile}) {
                     <SidebarMenu className="text-green-600 text-[1.1rem] relative left-5 top-8">
                     <div className=" relative my-2 ">Your name</div>
                         <div className="flex justify-between ">
-                        
-                            <div className="text-[80%] text-black">{name}</div>
-                            <div className="relative right-5 text-black "><Edit2 className="p-1 bottom-1 relative"/></div>
+                          {!nameupdating &&
+                            <div className="text-[80%] text-black">{name}</div>}
+                            {nameupdating &&
+                            <Input className="text-black outline-none border-gray-700 w-[70%] mx-auto" placeholder={"Edit your name here.."}  onChange={(e)=>setupdatedname(e.target.value)}/> }
+                            <div className="relative right-5 text-black ">
+                              {!nameupdating ?(
+                              
+                              <Edit2 className="p-1 bottom-1 relative cursor-pointer" onClick={()=>{setnameupdating(!nameupdating)}}/>
+                              ) :(
+                                    <Check className="p-1 bottom-0 relative right-1 cursor-pointer" style={{border:"none"}} size={30} onClick={()=>{setnameupdating(!nameupdating);changename();}}/>
+                              )}
+
+                            </div>
                             
                             </div>
                             
