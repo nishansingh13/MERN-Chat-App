@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile ,ArrowLeftIcon, Loader2} from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
@@ -14,7 +14,7 @@ import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "http://192.168.1.9:5000/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { selectedChat, user, notification, setNotification } = ChatState();
@@ -39,7 +39,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `http://192.168.1.9:5000/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -83,7 +83,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
 
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "http://192.168.1.9:5000/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id,
@@ -176,8 +176,18 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     >
     {
   !selectedChat ? (
-    <div className="text-black flex items-center justify-center text-[2rem] overflow-hidden">
-      YOHOHO CHATS PE CLICK KROOO!!
+    <div className="text-white bg-white h-lvh  flex flex-col items-center justify-center text-[2rem] overflow-hidden ">
+      
+      <div className="flex gap-2 font-semibold text-green-600">
+        <div className="relative top-3"><MessageSquareText size={30}/></div>
+      
+        <div className="">Chatify {!isMobile?"Web":""}</div>
+      </div>
+
+      <div className="text-[60%] text-green-600">Responsive Chatting Web App</div>
+     
+
+
     </div>
   ) : (
     loading ? (
@@ -187,8 +197,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       </div>
     ) : (
       // The rest of your chat content here
-      <div className={`overflow-hidden `}>
-        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mr-1 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"}`}>
+      <div className={`overflow-hidden`}>
+        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"}`}>
           <div className="relative flex items-center justify-between ">
             <div className="flex">
               {isMobile && (
@@ -211,7 +221,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
           </div>
         </div>
 
-        <Separator className={`${isMobile ? "relative top-4" : ""}`} />
+        <Separator className={`${isMobile ? "relative top-4" : "relative top-2"}`} />
 
         <div className={`w-full ${isMobile ? "mt-0 h-[540px]" : "mt-[2rem] h-[540px]"}`}>
           <Scrollbars

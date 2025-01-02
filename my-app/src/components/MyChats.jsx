@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
 
-function MyChats({open,setOpen,showchat,showsection,setshowchat}) {
+function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,setshowprofile}) {
   const [chatloading,setchatloading] = useState(false);
   const navigate = useNavigate();
   const logout = ()=>{
@@ -53,7 +53,7 @@ const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
+      const { data } = await axios.get("http://192.168.1.9:5000/api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {
@@ -100,23 +100,25 @@ const filteredChats = chats.filter((chat) => {
     
   
       <div className={`bg-[#F5F6FA] text-black fixed  ${isMobile?"ml-0 w-full":""} w-[25rem] ml-0 h-lvh `}>
+        
         <div>
           <div className="flex justify-between mx-6 my-3">
             <div className="text-[1.8rem]">Chats</div>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <MoreVertical className="bg-green-200 p-1 mt-2" />
+            <DropdownMenu >
+              <DropdownMenuTrigger >
+                <MoreVertical className="bg-green-600 rounded-sm p-1 mt-2" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>CHATTY</DropdownMenuLabel>
+              <DropdownMenuContent >
+                <DropdownMenuLabel>CHATIFY</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setOpen(!open)}>Search New Users</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsGroupChatOpen(true)}>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setshowprofile(!showprofile)} >My Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpen(!open)} className="cursor-pointer">Search New Users</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsGroupChatOpen(true)} className="cursor-pointer">
                   Create a group
                 </DropdownMenuItem>
                 
-                <DropdownMenuItem onClick={logout}>
-                  <div className="flex gap-1"> 
+                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                  <div className="flex gap-1 cursor-pointer"> 
                     <LogOut size={20} onClick={logout}/>
                     <div>Logout</div>
                     </div>
@@ -143,7 +145,8 @@ const filteredChats = chats.filter((chat) => {
           </div>
 
           <div className="bg-white py-2 px-2 m-[1rem] border rounded-2xl ">
-            <ScrollArea className=" max-h-[34rem] min-h-[30rem]">
+            <ScrollArea className=" h-[calc(100lvh-10rem)]
+">
             {
   chatloading ? (
    <div className="flex flex-col gap-4">
@@ -206,8 +209,8 @@ const filteredChats = chats.filter((chat) => {
       return (
         <div
           key={chat._id}
-          className={`cursor-pointer pl-2 rounded-xl  ${
-            selectedChat === chat ? "bg-green-500 text-white" : "bg-gray-50"
+          className={`cursor-pointer pl-2 rounded-xl ${!selectedChat && "hover: transition-all hover:bg-gray-200" } ${
+            selectedChat === chat ? "bg-green-600 text-white" : "bg-gray-50"
           }`}
           onClick={() => {
             setSelectedChat(chat);
