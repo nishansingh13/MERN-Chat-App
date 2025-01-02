@@ -209,7 +209,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               )}
               <img
                 src={`${!selectedChat.isGroupChat ? getChatName().pic : ""}`}
-                className="w-[3rem] rounded-full p-1"
+                className="w-[3.5rem] h-[3.5rem] rounded-full p-1"
               />
               <div className="text-[1.5rem] px-2 relative top-1">
                 {!selectedChat.isGroupChat ? getChatName().name : getChatName()}

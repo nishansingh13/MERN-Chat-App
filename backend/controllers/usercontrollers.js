@@ -73,5 +73,20 @@ const changename = asyncHandler(async(req, res) => {
         throw new Error("User not found");
     }
 });
+const changeprofile = asyncHandler(async(req,res)=>{
+    const { id, imagelink } = req.body;
+    const user = await User.findByIdAndUpdate(id, { pic: imagelink }, { new: true });
+    if (user) {
+        res.status(200).json({ 
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            pic: user.pic 
+        });
+    } else {
+        res.status(404).json({ message: "User not found" });
+        throw new Error("User not found");
+    }
+})
 
-module.exports = {registeruser,authUser,allUsers,changename};
+module.exports = {registeruser,authUser,allUsers,changename,changeprofile};

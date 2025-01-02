@@ -86,7 +86,7 @@ function Slider({ open, setOpen }) {
             onClick={() => setOpen(false)}
             className="relative left-[14rem]"
           >
-            <X  className="border border-black rounded-full relative left-[8.6rem] text-white bg-black bottom-1 my-2"/>
+            <X className="border border-black rounded-full relative left-[8.6rem] text-white bg-black bottom-1 my-2"/>
           </button>
           <SidebarGroupLabel className="text-[1rem] text-black">
             <div className="flex w-full max-w-sm items-center space-x-2">

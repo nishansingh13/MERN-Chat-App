@@ -210,10 +210,13 @@ const filteredChats = chats.filter((chat) => {
 
       return (
         <div
-          key={chat._id}
-          className={`cursor-pointer pl-2 rounded-xl ${!selectedChat && "hover: transition-all hover:bg-gray-200" } ${
-            selectedChat === chat ? "bg-green-600 text-white" : "bg-gray-50"
-          }`}
+        key={chat._id}
+        className={`cursor-pointer pl-2 rounded-xl ${
+          selectedChat === chat 
+            ? "bg-green-600 text-white" 
+            : "hover:transition-all hover:bg-gray-200 bg-gray-50"
+        }`}
+        
           onClick={() => {
             setSelectedChat(chat);
             isMobile ? setshowchat(!showchat) : "";
