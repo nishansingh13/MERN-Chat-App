@@ -15,8 +15,13 @@ const registeruser = asyncHandler(async(req,res)=>{
 
     }
     const user = await User.create({name , email , password, pic});
-    if(user){
+
+    if(user.pic!=""){
         res.status(201).json({_id : user._id, name: user.name , email : user.email, pic : user.pic , token : generatetoken(user._id)});
+    }
+    else if(user.pic==""){
+        res.status(201).json({_id : user._id, name: user.name , email : user.email, token : generatetoken(user._id)});
+   
     }
     else{
         throw new Error("Failed to Create Userr");
