@@ -266,7 +266,7 @@ function Login(){
         {/* Custom label for the file input */}
         <label htmlFor="file-input" className="relative cursor-pointer bottom-5">
           <img
-            src={pic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
+            src={pic || 'https://res.cloudinary.com/dqsx8yzbs/image/upload/v1735916416/default_j0t1tk.png'}
             className='w-[3rem] h-[3rem] rounded-full relative mx-[2rem]'
             alt="avatar"
           />
