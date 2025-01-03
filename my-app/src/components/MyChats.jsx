@@ -233,7 +233,7 @@ const filteredChats = chats.filter((chat) => {
             ) : (
               <div className="flex gap-2 my-2 py-2">
                 <img
-                  src={otherUser?.pic || "/default-avatar.png"}
+                  src={otherUser?.pic || "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"}
                   alt="User"
                   className="w-[2rem] rounded-full"
                 />

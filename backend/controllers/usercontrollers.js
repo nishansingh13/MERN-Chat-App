@@ -2,31 +2,44 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/UserModel");
 const generatetoken = require("../config/generatetoken");
 
-const registeruser = asyncHandler(async(req,res)=>{
-    const {name , email , password , pic } = req.body;
-    if(!name || !email || !password){
+const registeruser = asyncHandler(async (req, res) => {
+    const { name, email, password, pic } = req.body;
+
+    if (!name || !email || !password) {
         res.status(404);
         throw new Error("Fill all fields please");
     }
-    const userExist = await User.findOne({email});
-    if(userExist){
-        res.status(400).json({message : "User exists already!!"});
-        throw new Error("User already exist!!");
 
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+        res.status(400).json({ message: "User exists already!!" });
+        throw new Error("User already exists!!");
     }
-    const user = await User.create({name , email , password, pic});
 
-    if(user.pic!=""){
-        res.status(201).json({_id : user._id, name: user.name , email : user.email, pic : user.pic , token : generatetoken(user._id)});
+    // Handle case where pic is an empty string
+    const profilePic = pic === "" ? undefined : pic; // If pic is empty string, it will be undefined, so the default value from schema will be used
+
+    // Create the user
+    const user = await User.create({
+        name,
+        email,
+        password,
+        pic: profilePic
+    });
+
+    if (user) {
+        res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            pic: user.pic, // pic will have the default if it's not provided or is an empty string
+            token: generatetoken(user._id)
+        });
+    } else {
+        throw new Error("Failed to Create User");
     }
-    else if(user.pic==""){
-        res.status(201).json({_id : user._id, name: user.name , email : user.email, token : generatetoken(user._id)});
-   
-    }
-    else{
-        throw new Error("Failed to Create Userr");
-    }
-})
+});
+
 const authUser = asyncHandler(async(req,res)=>{
     console.log("working");
     const {email,password} = req.body;
