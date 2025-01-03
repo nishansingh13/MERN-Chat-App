@@ -5,28 +5,30 @@ import Groupchat from "./supports/Groupchat"; // Import Groupchat component
 import { MessageCircle, MessageSquareMore, MessageSquareText } from "lucide-react";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
-import { MoreVertical} from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { useMediaQuery } from "react-responsive";
+import group from "../assets/group.jpg";
 
-
-import {   LogOut   } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
+import { io } from "socket.io-client";
 
-function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,setshowprofile}) {
-  const [chatloading,setchatloading] = useState(false);
+function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofile, setshowprofile }) {
+  const [chatloading, setchatloading] = useState(false);
   const navigate = useNavigate();
-  const logout = ()=>{
-    
+  const [latestmessage, setlatestmessage] = useState("");
+  const logout = () => {
+
     navigate("/");
-        localStorage.removeItem("userInfo");
-  
+    localStorage.removeItem("userInfo");
+
   }
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
- 
+
   const {
     selectedChat,
     setSelectedChat,
@@ -34,12 +36,15 @@ function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,set
     setUser,
     chats,
     setChats,
+    messages,
+    setnewestmessage,
+    newestmessage
   } = ChatState();
-
   const [mdata, setm] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // New state for search query
   const [isGroupChatOpen, setIsGroupChatOpen] = useState(false);  // State for opening group chat dialog
-  const [sidebar,setsidebar] = useState(true);
+  const [sidebar, setsidebar] = useState(true);
+
   const fetchchats = async () => {
     if (!user || !user.token) {
       console.log("No user token found. Skipping API call.");
@@ -53,13 +58,13 @@ function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,set
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
+      const { data } = await axios.get("http://192.168.1.9:5000/api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {
       console.log("Error fetching chats:", err);
     }
-    finally{
+    finally {
       setchatloading(false);
     }
   };
@@ -78,33 +83,39 @@ function MyChats({open,setOpen,showchat,showsection,setshowchat ,showprofile,set
     }
   }, [user]); // Fetch chats when the user state changes
 
-const filteredChats = chats.filter((chat) => {
-  if (!user || !user._id) return false; // Skip if user is not loaded
+  const filteredChats = chats.filter((chat) => {
+    if (!user || !user._id) return false; // Skip if user is not loaded
 
-  if (chat.isGroupChat) {
-    return chat.chatName?.toLowerCase().includes(searchQuery.toLowerCase());
-  } else {
-    const userName =
-      chat.users && chat.users.length > 1
-        ? chat.users[0]._id === user._id
-          ? chat.users[1]?.name || "Unknown User"
-          : chat.users[0]?.name || "Unknown User"
-        : "Unknown Chat";
-    return userName.toLowerCase().includes(searchQuery.toLowerCase());
-  }
-});
+    if (chat.isGroupChat) {
+      return chat.chatName?.toLowerCase().includes(searchQuery.toLowerCase());
+    } else {
+      const userName =
+        chat.users && chat.users.length > 1
+          ? chat.users[0]._id === user._id
+            ? chat.users[1]?.name || "Unknown User"
+            : chat.users[0]?.name || "Unknown User"
+          : "Unknown Chat";
+      return userName.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+  });
+  const getLatestMessage = (chatId) => {
+    return newestmessage[chatId] || selectedChat?.latestMessage?.content;
+  };
 
+  useEffect(() => {
+
+  }, [newestmessage]);
 
   return (
-    <>  
-    
-  
-      <div className={`bg-[#F5F6FA] text-black fixed  ${isMobile?"ml-0 w-full":""} w-[25rem] ml-0 h-lvh `}>
-        
+    <>
+
+
+      <div className={`bg-[#F5F6FA] text-black fixed  ${isMobile ? "ml-0 w-full" : ""} w-[25rem] ml-0 h-lvh `}>
+
         <div>
           <div className="flex justify-between mx-6 my-3">
             <div className="text-[1.8rem] text-green-600 flex font-semibold gap-2">
-              <div><MessageSquareText className="relative top-3"/></div>
+              <div><MessageSquareText className="relative top-3" /></div>
               <div>Chatify</div>
             </div>
             <DropdownMenu >
@@ -120,18 +131,18 @@ const filteredChats = chats.filter((chat) => {
                   Create a group
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout} className="cursor-pointer">
-                  <div className="flex gap-1 cursor-pointer"> 
-                    <LogOut size={20} onClick={logout}/>
+                  <div className="flex gap-1 cursor-pointer">
+                    <LogOut size={20} onClick={logout} />
                     <div>Logout</div>
-                    </div>
-                  
+                  </div>
+
                 </DropdownMenuItem>
 
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
-         
+
           {isGroupChatOpen && <Groupchat setIsOpen={setIsGroupChatOpen} />}  {/* Pass setIsOpen to Groupchat */}
 
           <div className="w-[80%] mx-auto my-4">
@@ -149,112 +160,135 @@ const filteredChats = chats.filter((chat) => {
           <div className="bg-white py-2 px-2 m-[1rem] border rounded-2xl ">
             <ScrollArea className=" h-[calc(100lvh-10rem)]
 ">
-            {
-  chatloading ? (
-   <div className="flex flex-col gap-4">
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-    <div className="flex items-center space-x-4">
-    <Skeleton className="h-12 w-12 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
-    </div>
-    </div>
-  </div>
-  
-  ) : (
-    filteredChats.map((chat) => {
-      const validUsers = chat.users?.filter((u) => u && u._id); 
+              {
+                chatloading ? (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
+                  </div>
 
-      if (!validUsers || validUsers.length < 2) {
-        console.warn(`Chat with ID ${chat._id} has missing users. Skipping.`);
-        return null;
-      }
+                ) : (
+                  filteredChats.map((chat) => {
+                    const validUsers = chat.users?.filter((u) => u && u._id);
 
-      const otherUser =
-        validUsers[0]._id === user._id ? validUsers[1] : validUsers[0];
+                    if (!validUsers || validUsers.length < 2) {
+                      console.warn(`Chat with ID ${chat._id} has missing users. Skipping.`);
+                      return null;
+                    }
 
-      return (
-        <div
-        key={chat._id}
-        className={`cursor-pointer pl-2 rounded-xl ${
-          selectedChat === chat 
-            ? "bg-green-600 text-white" 
-            : "hover:transition-all hover:bg-gray-200 bg-gray-50"
-        }`}
-        
-          onClick={() => {
-            setSelectedChat(chat);
-            isMobile ? setshowchat(!showchat) : "";
-          }}
-        >
-          <div className="pl-[1rem] text-[0.9rem]">
-            {chat.isGroupChat ? (
-              <div className="flex gap-2 my-2 py-1">
-                <div>
-                  <MessageCircle size={30} className={`${selectedChat === chat ? "text-white" : "text-black"}`} />
-                </div>
-                <div>{chat.chatName}</div>
-              </div>
-            ) : (
-              <div className="flex gap-2 my-2 py-2">
-                <img
-                  src={otherUser?.pic || ""}
-                  alt="User"
-                  className="w-[2rem] rounded-full"
-                />
-                <div>{otherUser?.name || "Unknown User"}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    })
-  )
-}
+                    const otherUser =
+                      validUsers[0]._id === user._id ? validUsers[1] : validUsers[0];
 
+                    const latestmessage = chat.latestMessage?.content;
 
+                    return (
+                      <div
+                        key={chat._id}
+                        className={`cursor-pointer pl-2 rounded-xl ${selectedChat === chat
+                            ? "bg-green-600 text-white"
+                            : "hover:transition-all hover:bg-gray-200 bg-gray-50"
+                          }`}
 
+                        onClick={() => {
+                          setSelectedChat(chat);
+                          isMobile ? setshowchat(!showchat) : "";
+                        }}
+                      >
+                        <div className="pl-[1rem] text-[0.9rem]">
+                          {chat.isGroupChat ? (
+                            <div className="flex gap-2 my-2 py-2">
+                              <img
+                                src={group}
+                                alt="User"
+                                className="w-[3rem] h-[3rem] rounded-full"
+                              />
+                              <div>
+                                <div>{chat.chatName}</div>
+                                <div className={`text-gray-500`}>
+                                  {
+                                    newestmessage[chat?._id] !== undefined
+                                      ? newestmessage[chat._id]
+                                      : (chat.latestMessage ? chat.latestMessage.content : "")
+                                  }
+                                </div>
+                              </div>
 
+                            </div>
+                          ) : (
+                            <div>
+                              <div className={`flex gap-2 my-2 py-2`}>
+                                <img
+                                  src={otherUser?.pic || ""}
+                                  alt="User"
+                                  className="w-[3rem] h-[3rem] rounded-full"
+                                />
+                                <div>
+                                  <div>{otherUser?.name || "Unknown User"}</div>
+                                  <div className={`text-gray-500`}>
+                                    {
+                                      newestmessage[chat?._id] !== undefined
+                                        ? newestmessage[chat._id]
+                                        : (chat.latestMessage ? chat.latestMessage.content : "")
+                                    }
+                                  </div>
+
+                                </div>
+                              </div>
+
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                    );
+                  })
+                )
+              }
             </ScrollArea>
           </div>
         </div>
       </div>
-      
+
     </>
   );
 }

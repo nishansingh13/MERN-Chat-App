@@ -9,6 +9,7 @@ import axios from "axios";
 
 function ChatPage() {
   const { user } = ChatState();
+  const [messages, setMessages] = useState([]);
   const [checked, setchecked] = useState(false);
   const [showsection, setshowsection] = useState(false);
   const [open, setOpen] = useState(false);
@@ -16,7 +17,7 @@ function ChatPage() {
   const [showchat, setshowchat] = useState(false);
   const [leftbar, showleftbar] = useState(false);
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
- 
+  
   
 
   return (
@@ -35,6 +36,7 @@ function ChatPage() {
               setshowprofile={setshowprofile}
               setshowchat={setshowchat}
               showleftbar={showleftbar}
+           
             />
           )}
 
@@ -44,6 +46,7 @@ function ChatPage() {
                 leftbar={leftbar}
                 showleftbar={showleftbar}
                 showchat={showchat}
+               
                 setshowchat={setshowchat}
               />
             )

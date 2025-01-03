@@ -12,13 +12,14 @@ import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
 import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
+import group from "../assets/group.jpg";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "http://192.168.1.9:5000/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const { selectedChat, user, notification, setNotification } = ChatState();
-  const [messages, setMessages] = useState([]);
+  const { selectedChat, user, notification, setNotification ,setnewestmessage} = ChatState();
   const [newMessage, setNewMessage] = useState("");
   const socketRef = useRef(null);
   const scrollRef = useRef(null);
@@ -28,6 +29,15 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const typingTimeoutRef = useRef(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   const isMobile = useMediaQuery({query:"(max-width:768px)"});  
+  const {messages,setMessages} = ChatState();
+  const updateNewestMessage = (chatId, message) => {
+    setnewestmessage((prevState) => ({
+      ...prevState,
+      [chatId]: message, // Set the newest message for the specific chat
+    }));
+  };
+  
+  
   const fetchMessages = async () => {
     if (!selectedChat) return;
     setLoading(true);
@@ -39,7 +49,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `http://192.168.1.9:5000/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -68,7 +78,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       ? selectedChat.users[1]
       : selectedChat.users[0];
   };
-
+  
   const sendMessage = async (e) => {
     e.preventDefault(); // Prevent the default form submission
     if (newMessage) {
@@ -83,7 +93,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
 
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "http://192.168.1.9:5000/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id,
@@ -95,7 +105,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         setMessages((prevMessages) => [...prevMessages, data]); // Update message list
 
         if (socketRef.current) {
-          socketRef.current.emit("new message", data); // Emit the new message to other users
+          socketRef.current.emit("new message", data);
+         updateNewestMessage(data.chat._id,data.content);
         }
       } catch (err) {
         alert("Error sending message");
@@ -122,7 +133,17 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       setTyping(false);
     }, 3000);
   };
-
+  function convertToIST(utcTimestamp) {
+    const utcDate = new Date(utcTimestamp); 
+    const options = { 
+        timeZone: 'Asia/Kolkata', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: true // Use 24-hour format
+    };
+    const istDate = utcDate.toLocaleString('en-IN', options);
+    return istDate.replace(',', ''); // Optional: Remove the comma
+}
   useEffect(() => {
     if (user && !socketRef.current) {
       socketRef.current = io(endpoint);
@@ -147,6 +168,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       socketRef.current.on("message received", (newMessage) => {
         if (selectedChat && selectedChat._id === newMessage.chat._id) {
           setMessages((prevMessages) => [...prevMessages, newMessage]);
+          
+          
         } else {
           const senderName = newMessage.sender?.name;
           if (senderName && !notification.includes(senderName)) {
@@ -207,10 +230,25 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                   onClick={() => setshowchat(!showchat)}
                 />
               )}
+              <Dialog >
+              <DialogTrigger>
+                
               <img
-                src={`${!selectedChat.isGroupChat ? getChatName().pic : ""}`}
+                src={`${!selectedChat.isGroupChat ? getChatName().pic : group}`}
                 className="w-[3.5rem] h-[3.5rem] rounded-full p-1"
               />
+              </DialogTrigger>
+              <DialogContent className="bg-gray-300">
+    <DialogHeader>
+      <DialogTitle>User Info</DialogTitle>
+      <DialogDescription>
+       <img   src={`${!selectedChat.isGroupChat ? getChatName().pic : group}`} className={`p-[4rem] ${!isMobile?"w-[30rem] h-[30rem]":"w-[20rem] h-[20rem]"} rounded-full`} />
+      </DialogDescription>
+      <div className="mx-auto relative bottom-[3rem] "><span className="font-semibold ">Email: </span>{getChatName()?.email}</div>
+    </DialogHeader>
+  </DialogContent>
+  </Dialog>
+              
               <div className="text-[1.5rem] px-2 relative top-1">
                 {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
               </div>
@@ -231,24 +269,59 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             className="mt-[1rem]"
             ref={scrollRef}
           >
+          
             <div className="p-4">
-              {messages.map((u) => (
+
+              {messages.map((u,index) => (
+                <div key={u._id}> 
+                {/* {console.log( messages[index-1],"index",index)} */}
                 <div
-                  key={u._id}
+                  
                   className={`${
                     u.sender._id === user._id
-                      ? "bg-green-100 my-2 ml-auto text-left"
-                      : "bg-blue-300 my-2 mr-auto text-left"
-                  } w-fit max-w-[35%] break-words p-2 rounded-md`}
+                      ? "bg-green-100 p-1 my-2 ml-auto text-left"
+                      : "bg-blue-300 my-2 p-1 mr-auto text-left"
+                  } w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md`}
                   style={{
                     borderRadius:
                       u.sender._id === user._id
                         ? "10px 10px 0 10px"
                         : "10px 10px 10px 0",
                   }}
-                >
+                >  {u.chat.isGroupChat &&
+                  <div className="text-[60%] text-gray-500 mr-auto text-right">{u.sender.name}</div>}
                   {u.content}
+                  <span className="text-right text-[65%] relative top-2 text-gray-500">  {convertToIST(u.createdAt)}</span>
+                
+     
                 </div>
+            
+{
+  u.chat.isGroupChat && (
+   
+    (index === messages.length - 1 || messages[index + 1]?.sender._id !== u.sender._id) && (
+      <div className={`
+        ${u.sender._id === user._id ? "ml-auto text-left" : "mr-auto text-left"}
+        w-fit max-w-[35%] break-words pb-2 px-1 rounded-md text-[80%]
+      `}>
+      <div 
+      >
+        <img src={u.sender.pic}  className="w-[1.6rem] h-[1.6rem] rounded-full"/>
+        
+      </div>
+      </div>
+    )
+  )
+}
+
+
+
+               
+ 
+
+                </div>
+                
+               
               ))}
             </div>
             <div className="w-[4rem] h-[2rem]">
