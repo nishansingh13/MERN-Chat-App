@@ -327,7 +327,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                   }}
                 >  {u.chat.isGroupChat && u.sender._id!==user._id &&
                   <div className="text-[60%] text-gray-500 mr-auto text-right">{u.sender.name}</div>}
-{u.content.startsWith("https:") && u.content.endsWith(".png") ? (
+{u.content.includes("dqsx8yzbs/image/")  ? (
           <Dialog >
           <DialogTrigger>
             
