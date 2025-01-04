@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText} from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
@@ -24,6 +24,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const socketRef = useRef(null);
   const scrollRef = useRef(null);
   const [typing, setTyping] = useState(false);
+  const [plusloading,setplusloading]=useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const typingTimeoutRef = useRef(null);
@@ -78,12 +79,45 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       ? selectedChat.users[1]
       : selectedChat.users[0];
   };
+  const generatelink = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "ml_default");
+    data.append("cloud_name", "dqsx8yzbs");
+    console.log(file.type)
+    try {
+      setplusloading(true);
+      const uploadUrl = file.type.startsWith("video/")
+      ? "https://api.cloudinary.com/v1_1/dqsx8yzbs/video/upload"
+      : file.type.startsWith("image/")
+      ? "https://api.cloudinary.com/v1_1/dqsx8yzbs/image/upload"
+      : "https://api.cloudinary.com/v1_1/dqsx8yzbs/raw/upload";
+      const res = await axios.post(
+        uploadUrl,
+        data
+      );
+      if (res.status === 200) {
+        const secureUrl = res.data.secure_url;
+        // Option 1: Send the link immediately
+        sendMessage(null, secureUrl);
   
-  const sendMessage = async (e) => {
-    e.preventDefault(); // Prevent the default form submission
-    if (newMessage) {
+        // Option 2: Set the link as the message content
+        // setNewMessage(secureUrl);
+      }
+    } catch (err) {
+      console.error("Error uploading file to Cloudinary:", err);
+    }
+    finally{
+      setplusloading(false);
+    }
+  };
+  
+  const sendMessage = async (e, fileMessage = null) => {
+    if (e) e.preventDefault(); // Prevent the default form submission
+    const messageContent = fileMessage || newMessage; // Use the link if provided
+    if (messageContent) {
       socketRef.current.emit("stop typing", selectedChat._id);
-
+  
       try {
         const config = {
           headers: {
@@ -91,28 +125,29 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             Authorization: `Bearer ${user.token}`,
           },
         };
-
+  
         const { data } = await axios.post(
           "http://192.168.1.9:5000/api/message",
           {
-            content: newMessage,
+            content: messageContent,
             chatId: selectedChat._id,
           },
           config
         );
-
+  
         setNewMessage(""); // Clear input after sending the message
         setMessages((prevMessages) => [...prevMessages, data]); // Update message list
-
+  
         if (socketRef.current) {
           socketRef.current.emit("new message", data);
-         updateNewestMessage(data.chat._id,data.content);
+          updateNewestMessage(data.chat._id, data.content);
         }
       } catch (err) {
         alert("Error sending message");
       }
     }
   };
+  
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
@@ -162,6 +197,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       }
     };
   }, [user]);
+  
 
   useEffect(() => {
     if (socketRef.current) {
@@ -281,16 +317,58 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                     u.sender._id === user._id
                       ? "bg-green-100 p-1 my-2 ml-auto text-left"
                       : "bg-blue-300 my-2 p-1 mr-auto text-left"
-                  } w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md`}
+                  } w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md
+                `}
                   style={{
                     borderRadius:
                       u.sender._id === user._id
                         ? "10px 10px 0 10px"
                         : "10px 10px 10px 0",
                   }}
-                >  {u.chat.isGroupChat &&
+                >  {u.chat.isGroupChat && u.sender._id!==user._id &&
                   <div className="text-[60%] text-gray-500 mr-auto text-right">{u.sender.name}</div>}
-                  {u.content}
+{u.content.startsWith("https:") && u.content.endsWith(".png") ? (
+          <Dialog >
+          <DialogTrigger>
+            
+          <img src={u.content} alt="Image message" className="w-full h-auto" />
+          </DialogTrigger>
+          <DialogContent className="bg-gray-300">
+<DialogHeader>
+
+  <DialogDescription>
+  <img src={u.content} alt="Image message" className="w-full h-auto" />
+  </DialogDescription>
+</DialogHeader>
+</DialogContent>
+</Dialog>
+       
+
+) : u.content.includes("dqsx8yzbs/video/") ? (
+  <video src={u.content} controls className="w-full h-[10rem]" />
+) : u.content.includes("dqsx8yzbs/raw/") && u.content.endsWith(".pdf") ? (
+  <a
+    href={u.content}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-500 underline"
+  >
+    Open PDF
+  </a>
+) : u.content.includes("dqsx8yzbs/raw/") ? (
+  <a
+    href={u.content}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-500 underline underline-offset-4"
+  >
+    { u.content.substring(u.content.lastIndexOf('/') + 1)}
+   
+  </a>
+) : (
+  u.content
+)}
+
                   <span className="text-right text-[65%] relative top-2 text-gray-500">  {convertToIST(u.createdAt)}</span>
                 
      
@@ -299,13 +377,16 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 {
   u.chat.isGroupChat && (
    
-    (index === messages.length - 1 || messages[index + 1]?.sender._id !== u.sender._id) && (
+    ((index === messages.length - 1 || messages[index + 1]?.sender._id !== u.sender._id) && u.sender._id!==user._id ) && (
+      
       <div className={`
         ${u.sender._id === user._id ? "ml-auto text-left" : "mr-auto text-left"}
         w-fit max-w-[35%] break-words pb-2 px-1 rounded-md text-[80%]
       `}>
       <div 
+      
       >
+         
         <img src={u.sender.pic}  className="w-[1.6rem] h-[1.6rem] rounded-full"/>
         
       </div>
@@ -313,6 +394,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     )
   )
 }
+
 
 
 
@@ -354,8 +436,23 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               className="bottom-[120px] left-[50%] transform -translate-x-1/2"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             >
+             
               <Smile className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"}`} />
             </button>
+           {!plusloading?(
+            <button
+              type="button"
+              className="bottom-[120px] left-[50%] transform -translate-x-1/2"
+              
+            >
+             <label htmlFor="file-put">
+              <Plus className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} cursor-pointer`} />
+              </label>
+              <input type="file" className="hidden"  id="file-put" onChange={(e)=>generatelink(e.target.files[0])}/>
+         </button>
+):(
+  <div className={`${!isMobile?"top-5":"top-3"} left-1 text-green-600 relative`}><Loader2 className="animate-spin"/></div>
+)}
             <Input
               className={`md:w-[60rem] rounded-3xl ${isDesktop ? "mt-3 bg-gray-200" : "mt-1 bg-white"} flex-1 placeholder:text-black`}
               placeholder="Type your message here..."
