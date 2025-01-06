@@ -137,7 +137,7 @@ function Login(){
       try {
         setLoading(true);
         
-        // main-url = https://mern-chat-app-5-lyff.onrender.com/api
+        // main-url = https://mern-chat-app-5-lyff.onrender.com
         
         const login_data ={email,password};
         const res = await axios.post("https://mern-chat-app-5-lyff.onrender.com/api/user/login", login_data);

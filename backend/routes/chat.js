@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const chats = require('../data/data');
-console.log(chats);
 router.get('/',(req,res)=>{
     res.json(chats);
 })

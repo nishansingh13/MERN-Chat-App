@@ -16,6 +16,7 @@ const bodyParser = require('body-parser');
 
 const chatroute = require('./routes/chatroutes');
 const { Socket } = require('socket.io');
+const Message = require('./models/messagemodel');
 
 const app = express();
 app.use(express.json());
@@ -83,10 +84,29 @@ io.on("connection", (socket) => {
         socket.emit("connected");
     });
 
-    socket.on('join chat', (room) => {
+    socket.on('join chat', async (room) => {
         socket.join(room);
         console.log("User joined room: " + room);
+    
+        try {
+            // Find all messages in the chat room
+            const messages = await Message.find({ chat: room });
+    
+            // Mark each message as read
+            messages.forEach(async (message) => {
+                if (!message.read) {
+                    message.read = true;
+                    await message.save(); 
+                    
+                }
+            });
+        } catch (error) {
+            console.error("Error marking messages as read:", error);
+        }
     });
+    socket.on('data sending',(data)=>{
+        console.log(data);
+    })
 
     socket.on("typing", (room) => socket.in(room).emit("typing"));
     socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
@@ -100,6 +120,23 @@ io.on("connection", (socket) => {
             socket.in(user._id).emit("message received", newmessage);
         });
     });
+    socket.on("message is read", async ({ messageId, chatId }) => {
+        try {
+          // Update the message's isRead status to true in the database
+          const updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            { read: true },
+            { new: true } // Return the updated document
+          );
+      
+          // Emit back the updated message to the frontend
+          io.to(chatId).emit("message read", updatedMessage);
+        } catch (err) {
+          console.error("Error updating message read status:", err);
+        }
+      });
+      
+      
 
     socket.off("setup", () => {
         console.log("User disconnected");

@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus} from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
@@ -31,6 +31,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   const isMobile = useMediaQuery({query:"(max-width:768px)"});  
   const {messages,setMessages} = ChatState();
+  const [read,setread]=useState({});
   const updateNewestMessage = (chatId, message) => {
     setnewestmessage((prevState) => ({
       ...prevState,
@@ -201,11 +202,12 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 
   useEffect(() => {
     if (socketRef.current) {
+     
       socketRef.current.on("message received", (newMessage) => {
         if (selectedChat && selectedChat._id === newMessage.chat._id) {
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
+          setMessages((prevMessages) => [...prevMessages, newMessage]);  
           
-          
+          socketRef.current.emit("message is read",({messageId : newMessage , chatId : selectedChat._id}));
         } else {
           const senderName = newMessage.sender?.name;
           if (senderName && !notification.includes(senderName)) {
@@ -213,21 +215,40 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
           }
         }
       });
+      socketRef.current.on("message read", (updatedMessage) => {
+        console.log(updatedMessage);
+      
+        // Update the message's read status in the state
+        setMessages((prevMessages) => {
+          return prevMessages.map((message) =>
+            message._id === updatedMessage._id
+              ? { ...message, read: true }  // Mark the message as read
+              : message
+          );
+        });
+      });
+      
+    
+      
+     
     }
 
     return () => {
       if (socketRef.current) {
         socketRef.current.off("message received");
+        
       }
     };
-  }, [selectedChat, notification, setNotification]);
+  }, [selectedChat, notification, setNotification,messages]);
+  // In your socket event listener, update the message state to mark as "seen"
+
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollToBottom();
     }
   }, [messages]);
-
+ 
   return (
     <div
       className={` top-[0rem] h-[100%] md:ml-[25rem] bg-[#F5F6FA] overflow-hidden`}
@@ -369,7 +390,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   u.content
 )}
 
-                  <span className="text-right text-[65%] relative top-2 text-gray-500">  {convertToIST(u.createdAt)}</span>
+                  <span className="text-right text-[65%] relative top-2 text-gray-500 inline-flex">  {convertToIST(u.createdAt)} {user._id===u.sender._id && <CheckCheck className={`p-1 bottom-1 relative ${u.read?"text-blue-400":""}`}/>}</span>
                 
      
                 </div>
