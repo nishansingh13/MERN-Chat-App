@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext, useCallback } from "react";
 import { Input } from "./ui/input";
 import axios from "axios";
 import { Scrollbars } from "react-custom-scrollbars-2";
@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck} from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck, PhoneCall} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
@@ -14,14 +14,20 @@ import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 import group from "../assets/group.jpg";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { toast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
+import { useSocket } from "@/Context/SocketProvider";
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { selectedChat, user, notification, setNotification ,setnewestmessage} = ChatState();
+  const socketRef = useSocket();
   const [newMessage, setNewMessage] = useState("");
-  const socketRef = useRef(null);
+  const [open,setOpen]=useState(false);
   const scrollRef = useRef(null);
   const [typing, setTyping] = useState(false);
   const [plusloading,setplusloading]=useState(false);
@@ -31,7 +37,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   const isMobile = useMediaQuery({query:"(max-width:768px)"});  
   const {messages,setMessages} = ChatState();
-  const [read,setread]=useState({});
+  const navigate = useNavigate();
   const updateNewestMessage = (chatId, message) => {
     setnewestmessage((prevState) => ({
       ...prevState,
@@ -64,7 +70,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       console.error("Error fetching messages:", err);
     }
   };
-
+  
   useEffect(() => {
     if (selectedChat && user) {
       fetchMessages();
@@ -180,26 +186,74 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     const istDate = utcDate.toLocaleString('en-IN', options);
     return istDate.replace(',', ''); // Optional: Remove the comma
 }
+  const handleDecline = ()=>{
+    console.log("Clicked on decline");
+    socketRef.current.emit("call rejected",(user._id));
+  }
+  const handleUserJoined =useCallback(({email,id,room})=>{
+    console.log(id);
+    const userdata= (JSON.parse(localStorage.getItem("userInfo")))
+    if (room.users.some(user => user._id === userdata._id)) {
+     setOpen(true);
+   
+      // alert(`Incoming call from ${email}`);
+    } 
+  },[socketRef])
+  const handleRejection = ()=>{
+    console.log("Call rejected by recipient");
+  }
+  const handleAcceptance = ()=>{
+    if(socketRef.current){
+      const email = user.email;
+      const id = user._id;
+      socketRef.current.emit("call accepted by receiver",{email,id});
+      navigate("/call");
+    }
+  }
+  // sirf receiver ka data show krenge sender ki receiver aagya h 
+  const handleAcceptSender = useCallback(({ email, id }) => {
+
+    navigate("/call", { state: { email, id } });
+  }, [navigate]);
+  
   useEffect(() => {
-    if (user && !socketRef.current) {
-      socketRef.current = io(endpoint);
+  
+    // socketRef.current = io(endpoint);
+   
+    if (user && socketRef.current) {
+      // socketRef.current = io(endpoint);
       socketRef.current.emit("setup", user);
       socketRef.current.on("connected", () => setSocketConnected(true));
       socketRef.current.on("typing", () => setIsTyping(true));
+      socketRef.current.on("user joined",handleUserJoined);
       socketRef.current.on("stop typing", () => setIsTyping(false));
+      socketRef.current.on("call rejected by receiver",handleRejection);
+      socketRef.current.on("call accepted by receiver",handleAcceptSender);
+
     }
 
     return () => {
+    
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
       if (socketRef.current) {
-        socketRef.current.disconnect();
+          socketRef.current.off("connected", () => setSocketConnected(true));
+          socketRef.current.off("typing", () => setIsTyping(true));
+          socketRef.current.off("stop typing", () => setIsTyping(false));
+          socketRef.current.off("user joined",handleUserJoined);
+          socketRef.current.off("call rejected by receiver",handleRejection);
+          socketRef.current.off("call accepted by receiver",handleAcceptSender);
       }
     };
   }, [user]);
   
-
+  const handleSubmit = ()=>{
+    // console.log(user.email,selectedChat);
+    const email = user.email;
+    const room = selectedChat;
+    socketRef.current.emit("join room", { email,room});
+  }
   useEffect(() => {
     if (socketRef.current) {
      
@@ -216,9 +270,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         }
       });
       socketRef.current.on("message read", (updatedMessage) => {
-        console.log(updatedMessage);
-      
-        // Update the message's read status in the state
+       
         setMessages((prevMessages) => {
           return prevMessages.map((message) =>
             message._id === updatedMessage._id
@@ -250,10 +302,30 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   }, [messages]);
  
   return (
+    
+
     <div
       className={` top-[0rem] h-[100%] md:ml-[25rem] bg-[#F5F6FA] overflow-hidden`}
       
     >
+         {open && (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Call from <span className="text-black">{user.name} ({user.email})</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {setOpen(false);handleDecline()}}>Decline</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {handleAcceptance()}}>Answer</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+   
+
     {
   !selectedChat ? (
     <div className="text-white bg-white h-lvh  flex flex-col items-center justify-center text-[2rem] overflow-hidden ">
@@ -311,7 +383,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               </div>
             </div>
             <div>
-              <Settings onClick={() => showleftbar(!leftbar)} />
+             <PhoneCall className="cursor-pointer text-green-600" onClick={handleSubmit}/>
             </div>
           </div>
         </div>
@@ -417,10 +489,6 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 }
 
 
-
-
-               
- 
 
                 </div>
                 

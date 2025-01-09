@@ -61,7 +61,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
 
           try {
             const res = await axios.put(
-              "https://mern-chat-app-5-lyff.onrender.com/api/user/change-profile",
+              "http://192.168.1.11:5000/api/user/change-profile",
               updateData
             );
 
@@ -107,7 +107,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
       const data = { id, updatedname };
       try {
         const res = await axios.put(
-          "https://mern-chat-app-5-lyff.onrender.com/api/user/change-name",
+          "http://192.168.1.11:5000/api/user/change-name",
           data
         );
         const updatedUser = { ...user, name: updatedname };

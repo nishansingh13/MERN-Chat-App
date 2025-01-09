@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 const ChatContext = createContext();
 import { useToast } from "@/hooks/use-toast";
+import { io } from "socket.io-client";
 const ChatProvider = ({ children }) => {
   const [selectedChat, setSelectedChat] = useState();
   const [user, setUser] = useState();
@@ -10,12 +11,14 @@ const ChatProvider = ({ children }) => {
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const[newestmessage,setnewestmessage] = useState({});
+  // const socketRef = useRef(null);
 
   const { toast } = useToast();
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
       
       if (userInfo) {
@@ -24,7 +27,7 @@ const ChatProvider = ({ children }) => {
         navigate("/"); 
       }
     }, [navigate, toast]);
-  
+ 
   return (
     <ChatContext.Provider
       value={{
@@ -39,6 +42,7 @@ const ChatProvider = ({ children }) => {
         setMessages,
         setChats,
         newestmessage,
+       
         setnewestmessage
       }}
     >
