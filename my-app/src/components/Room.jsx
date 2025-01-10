@@ -1,29 +1,21 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
-import peer from "../service/peer";
-import { useLocation } from "react-router-dom";
-import { ChatState } from "@/Context/ChatProvider";
-import { io } from "socket.io-client";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
+import peer from "../service/peer";
+import { PhoneOffIcon } from "lucide-react";
 
 function Room() {
   const { state } = useLocation();
   const { email, id } = state || {};
-  const socketRef=useSocket();
+  const socketRef = useSocket();
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-
+  const [calling, setCalling] = useState(false); // Track ongoing calls
+  const navigate = useNavigate();
   // User joined room logic
   useEffect(() => {
-    // console.log(socketRef.current.connected);
-    // console.log(socketRef.current);
-    if(socketRef.current){
-      console.log("aagya",socketRef.current);
-    }
-    else{
-      console.log("whtt");
-    }
     if (email && id) {
       console.log(`User joined with ${email} and socket id ${id}`);
       setRemoteSocketId(id); // Now that we have the ID, set the remoteSocketId
@@ -36,33 +28,46 @@ function Room() {
   }, []);
 
   const handleCallUser = useCallback(async () => {
-    if (!remoteSocketId) return; // Avoid making a call if remoteSocketId is not set
+    if (!remoteSocketId || calling) return; // Prevent multiple calls
+    setCalling(true);
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    const offer = await peer.getOffer();
-    socketRef.current.emit("user call", { to: remoteSocketId, offer});
-    setMyStream(stream);
-  }, [remoteSocketId, socketRef]);
-
-  const handleIncomingCall = useCallback(
-    async ({ from, offer }) => {
-      setRemoteSocketId(from);
+    try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
       setMyStream(stream);
-      console.log("Incoming call from", from);
-      const ans = await peer.getAnswer(offer);
-      socketRef.current.emit("call accepted", { to: from, ans });
+      const offer = await peer.getOffer();
+      socketRef.current.emit("user call", { to: remoteSocketId, offer });
+    } catch (error) {
+      console.error("Error during call initiation:", error);
+    } finally {
+      setCalling(false);
+    }
+  }, [remoteSocketId, socketRef, calling]);
+
+  const handleIncomingCall = useCallback(
+    async ({ from, offer }) => {
+      setRemoteSocketId(from);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true,
+        });
+        setMyStream(stream);
+        console.log("Incoming call from", from);
+        const ans = await peer.getAnswer(offer);
+        socketRef.current.emit("call accepted", { to: from, ans });
+      } catch (error) {
+        console.error("Error handling incoming call:", error);
+      }
     },
     [socketRef]
   );
 
   const sendStreams = useCallback(() => {
+    if (!myStream) return;
+
     const senders = peer.peer.getSenders();
     myStream.getTracks().forEach((track) => {
       const sender = senders.find((s) => s.track?.kind === track.kind);
@@ -87,9 +92,9 @@ function Room() {
   }, [remoteSocketId, socketRef]);
 
   useEffect(() => {
-    peer.peer.addEventListener("negotiation_needed", handleNegoNeeded);
+    peer.peer.addEventListener("negotiationneeded", handleNegoNeeded);
     return () => {
-      peer.peer.removeEventListener("negotiation_needed", handleNegoNeeded);
+      peer.peer.removeEventListener("negotiationneeded", handleNegoNeeded);
     };
   }, [handleNegoNeeded]);
 
@@ -112,7 +117,14 @@ function Room() {
       setRemoteStream(remoteStream);
     });
   }, []);
-
+  useEffect(() => {
+    handleCallUser();
+  }, [remoteSocketId,remoteStream]);
+  const handleStopCall = ()=>{
+    navigate("/chats");
+    window.location.reload();
+  }
+  
   useEffect(() => {
     if (socketRef.current) {
       socketRef.current.on("user joined", handleUserJoined);
@@ -120,6 +132,7 @@ function Room() {
       socketRef.current.on("call accepted", handleCallAccepted);
       socketRef.current.on("nego needed", handleNegoIncoming);
       socketRef.current.on("peer nego final", handleNegoFinal);
+      socketRef.current.on("stop the call",handleStopCall);
     }
 
     return () => {
@@ -129,6 +142,7 @@ function Room() {
         socketRef.current.off("call accepted", handleCallAccepted);
         socketRef.current.off("nego needed", handleNegoIncoming);
         socketRef.current.off("peer nego final", handleNegoFinal);
+        socketRef.current.off("stop the call",handleStopCall);
       }
     };
   }, [
@@ -139,45 +153,42 @@ function Room() {
     handleNegoIncoming,
     handleNegoFinal,
   ]);
+  const back = ()=>{
+      // navigate("/chats");
+      socketRef.current.emit("stop call");
+      // window.location.reload();
+  }
 
   return (
     <>
-      <div>Room Page</div>
-      <div>{remoteSocketId ? "Connected" : "No one in room"}</div>
-      <br />
-      {remoteSocketId && (
-        <button
-          className="bg-black p-1 px-2 text-white rounded-md m-2"
-          onClick={handleCallUser}
-          disabled={!remoteSocketId} // Disable until remoteSocketId is set
-        >
-          Call
-        </button>
-      )}
-      {myStream && (
-        <div>
-          <h3>My Stream</h3>
-          <ReactPlayer
-            playing
-            muted
-            height="100px"
-            width="200px"
-            url={myStream}
-          />
-        </div>
-      )}
+     <button onClick={back} className="border relative top-[43.5rem] left-[55rem] p-2 rounded-full bg-red-400 z-10"><PhoneOffIcon/></button>
+     
+      <div className=" flex items-center justify-center">
+  
+
+     
       {remoteStream && (
-        <div>
-          <h3>Remote Stream</h3>
-          <ReactPlayer
-            playing
-            muted
-            height="100px"
-            width="200px"
-            url={remoteStream}
-          />
-        </div>
+          <div className="w-[60%] relative top-4 bg-slate-500">
+            <ReactPlayer
+            width="100%"
+            height="auto"
+            style={{
+              position:"relative",
+              bottom:"50px"
+            }}
+              playing
+              muted
+              url={remoteStream}
+            />
+            </div>
+     
       )}
+          {myStream && (
+  <div className="relative w-[20rem] top-[15rem] mx-[2rem]">
+    <ReactPlayer playing muted width="100%"  height="auto" url={myStream} />
+  </div>
+)}
+      </div>
     </>
   );
 }

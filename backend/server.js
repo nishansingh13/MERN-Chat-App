@@ -153,7 +153,7 @@ io.on("connection", (socket) => {
     console.log("user called");
     io.to(to).emit("incoming call", { from: socket.id, offer });
   });
- 
+   
   // Handle call accepted
   socket.on("call accepted", ({ to, ans }) => {
     console.log("Call accepted");
@@ -162,6 +162,9 @@ io.on("connection", (socket) => {
   socket.on("call rejected",(userId)=>{
     console.log("call rejected by",userId);
     socket.broadcast.emit("call rejected by receiver",userId);
+  })
+  socket.on("stop call",()=>{
+    io.emit("stop the call");
   })
   socket.on("call accepted by receiver",({email})=>{
     const data = {email, id:socket.id}

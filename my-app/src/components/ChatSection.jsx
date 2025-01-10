@@ -19,11 +19,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
+
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "http://192.168.1.11:5000/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [calling,setCalling]=useState(false);
   const { selectedChat, user, notification, setNotification ,setnewestmessage} = ChatState();
   const socketRef = useSocket();
   const [newMessage, setNewMessage] = useState("");
@@ -57,7 +59,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `http://192.168.1.11:5000/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -134,7 +136,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
   
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "http://192.168.1.11:5000/api/message",
           {
             content: messageContent,
             chatId: selectedChat._id,
@@ -188,6 +190,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 }
   const handleDecline = ()=>{
     console.log("Clicked on decline");
+   
     socketRef.current.emit("call rejected",(user._id));
   }
   const handleUserJoined =useCallback(({email,id,room})=>{
@@ -200,6 +203,13 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     } 
   },[socketRef])
   const handleRejection = ()=>{
+    toast({
+      variant:"destructive",
+      title:"Call Declined by user",
+      description:"Call Declined"
+    })
+    
+    setCalling(false);
     console.log("Call rejected by recipient");
   }
   const handleAcceptance = ()=>{
@@ -309,7 +319,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       
     >
          {open && (
-        <AlertDialog open={open} onOpenChange={setOpen}>
+          
+        <AlertDialog open={open || calling} onOpenChange={setOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -324,6 +335,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
           </AlertDialogContent>
         </AlertDialog>
       )}
+         
    
 
     {
@@ -332,7 +344,6 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       
       <div className="flex gap-2 font-semibold text-green-600">
         <div className="relative top-3"><MessageSquareText size={30}/></div>
-      
         <div className="">Chatify {!isMobile?"Web":""}</div>
       </div>
 
@@ -382,9 +393,33 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                 {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
               </div>
             </div>
+            
             <div>
-             <PhoneCall className="cursor-pointer text-green-600" onClick={handleSubmit}/>
+            <PhoneCall 
+  className="cursor-pointer text-green-600" 
+  onClick={() => {
+    handleSubmit();
+    setCalling(true);
+  }}
+/>
             </div>
+            {calling && (
+  <div className="absolute w-full h-[37rem] top-1 z-20  flex items-center justify-center">
+    <div className="bg-white p-4 rounded-lg shadow-lg">
+      <div className="text-[1.5rem] text-black w-[24rem]">Calling User...</div>
+      <div className="mt-4 flex justify-end">
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          onClick={() => setCalling(false)} // Cancel the call
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+            
           </div>
         </div>
 
