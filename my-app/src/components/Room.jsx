@@ -106,6 +106,7 @@ function Room() {
     [socketRef]
   );
 
+
   const handleNegoFinal = useCallback(async ({ ans }) => {
     await peer.setLocalDescription(ans);
   }, []);
@@ -119,12 +120,12 @@ function Room() {
   }, []);
   useEffect(() => {
     handleCallUser();
-  }, [remoteSocketId,remoteStream]);
-  const handleStopCall = ()=>{
+  }, [remoteSocketId, remoteStream]);
+  const handleStopCall = () => {
     navigate("/chats");
     window.location.reload();
   }
-  
+
   useEffect(() => {
     if (socketRef.current) {
       socketRef.current.on("user joined", handleUserJoined);
@@ -132,7 +133,7 @@ function Room() {
       socketRef.current.on("call accepted", handleCallAccepted);
       socketRef.current.on("nego needed", handleNegoIncoming);
       socketRef.current.on("peer nego final", handleNegoFinal);
-      socketRef.current.on("stop the call",handleStopCall);
+      socketRef.current.on("stop the call", handleStopCall);
     }
 
     return () => {
@@ -142,7 +143,7 @@ function Room() {
         socketRef.current.off("call accepted", handleCallAccepted);
         socketRef.current.off("nego needed", handleNegoIncoming);
         socketRef.current.off("peer nego final", handleNegoFinal);
-        socketRef.current.off("stop the call",handleStopCall);
+        socketRef.current.off("stop the call", handleStopCall);
       }
     };
   }, [
@@ -153,42 +154,50 @@ function Room() {
     handleNegoIncoming,
     handleNegoFinal,
   ]);
-  const back = ()=>{
-      // navigate("/chats");
-      socketRef.current.emit("stop call");
-      // window.location.reload();
+  const back = () => {
+    // navigate("/chats");
+    socketRef.current.emit("stop call");
+    // window.location.reload();
   }
 
   return (
     <>
-     <button onClick={back} className="border relative top-[43.5rem] left-[55rem] p-2 rounded-full bg-red-400 z-10"><PhoneOffIcon/></button>
-     
-      <div className=" flex items-center justify-center">
-  
 
-     
-      {remoteStream && (
-          <div className="w-[60%] relative top-4 bg-slate-500">
-            <ReactPlayer
-            width="100%"
-            height="auto"
-            style={{
-              position:"relative",
-              bottom:"50px"
-            }}
-              playing
-              muted
-              url={remoteStream}
-            />
+      <div className="w-full h-screen bg-[#F7E9D2]">
+        <div className="flex mx-[1rem]">
+          {remoteStream && (
+          
+
+            <div className="w-[60%] relative top-4">
+                <div className="text-[2rem]  w-[80%] py-4">User Video</div>
+              <div className="w-[80%] h-auto  rounded-2xl overflow-hidden my-2"
+                
+              >
+                
+                <ReactPlayer
+                  width="100%"
+                  height="100%"
+                  playing
+                  muted
+                  url={remoteStream}
+                />
+              </div>
+
+              <div className="flex items-center justify-center  w-[80%]"> <button onClick={back} className="p-2 rounded-full bg-red-400 z-10"><PhoneOffIcon /></button></div>
+
+
             </div>
-     
-      )}
+          )}
           {myStream && (
-  <div className="relative w-[20rem] top-[15rem] mx-[2rem]">
-    <ReactPlayer playing muted width="100%"  height="auto" url={myStream} />
-  </div>
-)}
+           
+            <div className="w-[20%] h-[100%] relative top-[26rem] right-[10rem] overflow-hidden rounded-xl ">
+              
+              <ReactPlayer playing muted width="100%" height="auto" url={myStream} />
+            </div>
+          )}
+        </div>
       </div>
+
     </>
   );
 }
