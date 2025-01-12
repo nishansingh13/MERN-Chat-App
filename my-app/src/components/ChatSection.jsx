@@ -22,7 +22,7 @@ import { useSocket } from "@/Context/SocketProvider";
 
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "https://mern-chat-app-fk6w.onrender.com//";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [calling,setCalling]=useState(false);
@@ -59,7 +59,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `https://mern-chat-app-fk6w.onrender.com//api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -136,7 +136,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
   
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "https://mern-chat-app-fk6w.onrender.com//api/message",
           {
             content: messageContent,
             chatId: selectedChat._id,

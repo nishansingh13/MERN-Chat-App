@@ -60,7 +60,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
+      const { data } = await axios.get("https://mern-chat-app-fk6w.onrender.com//api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {

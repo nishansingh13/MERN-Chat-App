@@ -36,7 +36,7 @@ function Slider({ open, setOpen }) {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.post("https://mern-chat-app-5-lyff.onrender.com/api/chat", { userid }, config);
+      const { data } = await axios.post("https://mern-chat-app-fk6w.onrender.com//api/chat", { userid }, config);
       console.log(chats);
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]); // if chat exists
       setSelectedChat(data);
@@ -64,7 +64,7 @@ function Slider({ open, setOpen }) {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`https://mern-chat-app-5-lyff.onrender.com/api/user?search=${search}`, config);
+      const { data } = await axios.get(`https://mern-chat-app-fk6w.onrender.com//api/user?search=${search}`, config);
       setdata(data);
     } catch (err) {
       console.log(err);
