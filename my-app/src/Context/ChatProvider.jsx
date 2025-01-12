@@ -10,6 +10,7 @@ const ChatProvider = ({ children }) => {
   const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [darkTheme,setDarkTheme]=useState(false);
   const[newestmessage,setnewestmessage] = useState({});
   // const socketRef = useRef(null);
 
@@ -37,6 +38,8 @@ const ChatProvider = ({ children }) => {
         setUser,
         notification,
         setNotification,
+        darkTheme,
+        setDarkTheme,
         chats,
         messages,
         setMessages,

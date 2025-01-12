@@ -19,7 +19,7 @@ import { ChatState } from "@/Context/ChatProvider";
 import { ScrollArea } from "@/components/ui/scroll-area"; 
 
 function Slider({ open, setOpen }) {
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const { user, setSelectedChat, chats, setChats ,darkTheme } = ChatState();
   const [data, setdata] = useState([]);
 
   const { toast } = useToast();
@@ -36,7 +36,7 @@ function Slider({ open, setOpen }) {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.post("https://mern-chat-app-5-lyff.onrender.com/api/chat", { userid }, config);
+      const { data } = await axios.post("http://192.168.1.11:5000/api/chat", { userid }, config);
       console.log(chats);
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]); // if chat exists
       setSelectedChat(data);
@@ -64,7 +64,7 @@ function Slider({ open, setOpen }) {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`https://mern-chat-app-5-lyff.onrender.com/api/user?search=${search}`, config);
+      const { data } = await axios.get(`http://192.168.1.11:5000/api/user?search=${search}`, config);
       setdata(data);
     } catch (err) {
       console.log(err);
@@ -80,7 +80,7 @@ function Slider({ open, setOpen }) {
       onClose={() => setOpen(false)}
       className={`transition-all w-[25rem] o ${open ? "translate-x-0" : "-translate-x-full"}`}
     >
-      <SidebarContent className="h-full overflow-hidden"> {/* added overflow-hidden */}
+      <SidebarContent className={`h-full overflow-hidden bg-[#1e1e1e]`}> {/* added overflow-hidden */}
         <SidebarGroup>
           <button
             onClick={() => setOpen(false)}
@@ -89,10 +89,11 @@ function Slider({ open, setOpen }) {
             <X className="border border-black rounded-full relative left-[8.6rem] text-white bg-black bottom-1 my-2"/>
           </button>
           <SidebarGroupLabel className="text-[1rem] text-black">
-            <div className="flex w-full max-w-sm items-center space-x-2">
+            <div className="flex w-full max-w-sm items-center space-x-2 mb-2">
               <Input
                 type="Search Users"
                 placeholder="Search Users"
+                className={`${darkTheme &&"bg-[#343434] text-white border-orange-500"}`}
                 value={search}
                 onChange={(e) => setsearch(e.target.value)}
               />
@@ -100,13 +101,13 @@ function Slider({ open, setOpen }) {
             </div>
           </SidebarGroupLabel>
           {!loading ? (
-            <SidebarGroupContent className="h-[calc(100vh-4rem)] overflow-y-auto"> {/* restricted height and added overflow-y-auto */}
+            <SidebarGroupContent className="h-[calc(100vh-4rem)] overflow-y-auto mt-2"> {/* restricted height and added overflow-y-auto */}
               <ScrollArea className="h-full w-full">
                 <SidebarMenu>
                   {data.length ? (
                     data.map((item) => (
-                      <SidebarMenuItem key={item._id} className="py-2" onClick={() => accesschat(item._id)}>
-                        <div className="bg-gray-200 flex gap-2 p-1 hover:bg-green-300 cursor-pointer">
+                      <SidebarMenuItem key={item._id} className="py-1" onClick={() => accesschat(item._id)} >
+                        <div className={`${darkTheme?"bg-[#2d2d2d] text-white py-2 hover:bg-[#3d3d3d] ":"bg-gray-200 hover:bg-green-300"} rounded-xl  flex gap-2 p-1  cursor-pointer`}>
                           <img src={item.pic} className="w-[2rem] h-[2rem] rounded-full" />
                           <div>
                             <div>{item.name}</div>

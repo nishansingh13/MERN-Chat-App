@@ -2,7 +2,7 @@ import { ChatState } from "@/Context/ChatProvider";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Groupchat from "./supports/Groupchat"; // Import Groupchat component
-import { MessageCircle, MessageSquareMore, MessageSquareText } from "lucide-react";
+import { MessageCircle, MessageSquareMore, MessageSquareText, Moon, Sun } from "lucide-react";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 import { MoreVertical } from "lucide-react";
@@ -38,7 +38,9 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
     setChats,
     messages,
     setnewestmessage,
-    newestmessage
+    newestmessage,
+    darkTheme,
+    setDarkTheme
   } = ChatState();
   const [mdata, setm] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // New state for search query
@@ -58,7 +60,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-5-lyff.onrender.com/api/chat", config);
+      const { data } = await axios.get("http://192.168.1.11:5000/api/chat", config);
       setm(data);
       setChats(data);
     } catch (err) {
@@ -110,19 +112,19 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
     <>
 
 
-      <div className={`bg-[#F5F6FA] text-black fixed  ${isMobile ? "ml-0 w-full" : ""} w-[25rem] ml-0 h-lvh `}>
+      <div className={`${darkTheme?"bg-[#2a2929]":"bg-[#F5F6FA]"}  text-black fixed  ${isMobile ? "ml-0 w-full" : ""} w-[25rem] ml-0 h-lvh `}>
 
         <div>
           <div className="flex justify-between mx-6 my-3">
-            <div className="text-[1.8rem] text-green-600 flex font-semibold gap-2">
+            <div className={`text-[1.8rem] ${darkTheme?"text-orange-500":"text-green-600"} flex font-semibold gap-2`}>
               <div><MessageSquareText className="relative top-3" /></div>
               <div>Chatify</div>
             </div>
             <DropdownMenu >
               <DropdownMenuTrigger >
-                <MoreVertical className="bg-green-500 rounded-sm p-1 " />
+                <MoreVertical className={`${darkTheme?"bg-orange-500":"bg-green-500"} rounded-sm p-1`} />
               </DropdownMenuTrigger>
-              <DropdownMenuContent >
+              <DropdownMenuContent className={`${darkTheme && "bg-[#1e1e1e] text-white"}`}>
                 <DropdownMenuLabel>CHATIFY</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setshowprofile(!showprofile)} >My Profile</DropdownMenuItem>
@@ -134,6 +136,15 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                   <div className="flex gap-1 cursor-pointer">
                     <LogOut size={20} onClick={logout} />
                     <div>Logout</div>
+                  </div>
+
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={()=>setDarkTheme(!darkTheme)} className="cursor-pointer">
+                  <div className="flex gap-1 cursor-pointer">
+                    {darkTheme?(<Moon size={20}/>):(
+                    <Sun  size={20}/>)}
+                   
+                    <div>{darkTheme?"Dark":"Light"} Theme</div>
                   </div>
 
                 </DropdownMenuItem>
@@ -149,7 +160,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
             <div className="relative">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <Input
-                className="bg-gray-50 pl-10"
+                className={`${darkTheme?"border-orange-500 bg-[#353434] text-white":"bg-gray-50"} pl-10`}
                 placeholder="Search here"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -157,9 +168,8 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
             </div>
           </div>
 
-          <div className="bg-white py-2 px-2 m-[1rem] border rounded-2xl ">
-            <ScrollArea className=" h-[calc(100lvh-10rem)]
-">
+          <div className={`${darkTheme?"bg-[#1e1e1e]":"bg-white"} py-2 px-2 m-[1rem]  rounded-2xl `}>
+            <ScrollArea className=" h-[calc(100lvh-10rem)] " >
               {
                 chatloading ? (
                   <div className="flex flex-col gap-4">
@@ -225,8 +235,8 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                       <div
                         key={chat._id}
                         className={`cursor-pointer pl-2 rounded-xl ${selectedChat === chat
-                            ? "bg-green-600 text-white"
-                            : "hover:transition-all hover:bg-gray-200 bg-gray-50"
+                            ? `${darkTheme?"bg-orange-500 text-black":"bg-green-600 text-white"} `
+                            : `hover:transition-all hover:bg-gray-200 bg-gray-50 ${darkTheme?"bg-[#343434] text-white hover:bg-[#494949]":""}`
                           }`}
 
                         onClick={() => {
@@ -234,13 +244,13 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                           isMobile ? setshowchat(!showchat) : "";
                         }}
                       >
-                        <div className="pl-[1rem] text-[0.9rem]">
+                        <div className="pl-[1rem] text-[0.9rem] ">
                           {chat.isGroupChat ? (
                             <div className="flex gap-2 my-2 py-2">
                               <img
                                 src={group}
                                 alt="User"
-                                className="w-[3rem] h-[3rem] rounded-full"
+                                className="w-[2.5rem] h-[2.5rem] rounded-full"
                               />
                               <div>
                                 <div>{chat.chatName}</div>
@@ -260,7 +270,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                                 <img
                                   src={otherUser?.pic || ""}
                                   alt="User"
-                                  className="w-[3rem] h-[3rem] rounded-full"
+                                  className="w-[2.5rem] h-[2.5rem] rounded-full"
                                 />
                                 <div>
                                   <div>{otherUser?.name || "Unknown User"}</div>

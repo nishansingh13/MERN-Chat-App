@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }) => {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const endpoint = "https://mern-chat-app-5-lyff.onrender.com";
+        const endpoint = "http://192.168.1.11:5000";
         socketRef.current = io(endpoint);
 
         return () => {

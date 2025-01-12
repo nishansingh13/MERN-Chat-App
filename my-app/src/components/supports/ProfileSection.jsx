@@ -18,7 +18,7 @@ import { useMediaQuery } from "react-responsive";
 import { Label } from "../ui/label";
 
 function ProfileSection({ showprofile, setshowprofile }) {
-  const { user, setUser } = ChatState();
+  const { user, setUser,darkTheme } = ChatState();
   const [updatedname, setupdatedname] = useState("");
   const [profilepic, setprofilepic] = useState("");
   const { toast } = useToast();
@@ -27,6 +27,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
   const [email, setemail] = useState("");
   const [name, setname] = useState("");
   const [profileloading, setprofileloading] = useState("");
+
   
 
   useEffect(() => {
@@ -61,7 +62,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
 
           try {
             const res = await axios.put(
-              "https://mern-chat-app-5-lyff.onrender.com/api/user/change-profile",
+              "http://192.168.1.11:5000/api/user/change-profile",
               updateData
             );
 
@@ -107,7 +108,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
       const data = { id, updatedname };
       try {
         const res = await axios.put(
-          "https://mern-chat-app-5-lyff.onrender.com/api/user/change-name",
+          "http://192.168.1.11:5000/api/user/change-name",
           data
         );
         const updatedUser = { ...user, name: updatedname };
@@ -131,9 +132,9 @@ function ProfileSection({ showprofile, setshowprofile }) {
       <Sidebar
         open={showprofile}
         onClose={() => setshowprofile(!showprofile)}
-        className={`transition-all w-[25rem] ${showprofile ? "translate-x-0" : "-translate-x-full"}`}
+        className={`transition-all w-[25rem] ${showprofile ? "translate-x-0" : "-translate-x-full"} `}
       >
-        <SidebarContent className="h-full overflow-hidden">
+        <SidebarContent className={`h-full overflow-hidden ${darkTheme?"bg-[#1e1e1e] text-white":""}`}>
           <SidebarGroup>
             <button
               onClick={() => setshowprofile(!showprofile)}
@@ -171,23 +172,23 @@ function ProfileSection({ showprofile, setshowprofile }) {
                     <Loader2 className="animate-spin text-green-600" size={30}/>
                     </div>
                     )}
-                  <SidebarMenu className="text-green-600 text-[1.1rem] relative left-5 top-8">
-                    <div className="my-2">Your name</div>
+                  <SidebarMenu className={`${darkTheme?"text-orange-500":"text-green-600"} text-[1.1rem] relative left-5 top-8`}>
+                    <div className={`my-2 `}>Your name</div>
                     <div className="flex justify-between">
-                      {!nameupdating && <div className="text-[80%] text-black">{name}</div>}
+                      {!nameupdating && <div className={`text-[80%] ${darkTheme?"text-white":"text-black"}`}>{name}</div>}
                       {nameupdating && (
                         <Input
-                          className="text-black outline-none border-gray-700 w-[70%] mx-auto"
+                          className={`${darkTheme?"text-white":"text-black"} outline-none border-gray-700 w-[70%] mx-auto `}
                           placeholder="Edit your name here.."
                           onChange={(e) => setupdatedname(e.target.value)}
                         />
                       )}
                       <div className="relative right-5 text-black">
                         {!nameupdating ? (
-                          <Edit2 className="p-1 bottom-1 relative cursor-pointer" onClick={() => setnameupdating(!nameupdating)} />
+                          <Edit2 className={`p-1 bottom-1 relative cursor-pointer ${darkTheme?"text-white":""}`} onClick={() => setnameupdating(!nameupdating)} />
                         ) : (
                           <Check
-                            className="p-1 bottom-0 relative right-1 cursor-pointer"
+                            className={`p-1 bottom-0 relative right-1 cursor-pointer ${darkTheme?"text-white":""}`}
                             size={30}
                             onClick={() => {
                               setnameupdating(!nameupdating);
@@ -198,10 +199,10 @@ function ProfileSection({ showprofile, setshowprofile }) {
                       </div>
                     </div>
                   </SidebarMenu>
-                  <SidebarMenu className="text-green-600 text-[1.1rem] relative left-5 top-8">
+                  <SidebarMenu className={`${darkTheme?"text-orange-500":""} text-[1.1rem] relative left-5 top-8`}>
                     <div className="my-2">Your email</div>
                     <div className="flex justify-between">
-                      <div className="text-[80%] text-black">{email}</div>
+                      <div className={`text-[80%] ${darkTheme?"text-white":"text-black"}`}>{email}</div>
                     </div>
                   </SidebarMenu>
                 </SidebarMenu>

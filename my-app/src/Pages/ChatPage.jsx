@@ -15,15 +15,17 @@ function ChatPage() {
   const [open, setOpen] = useState(false);
   const [showprofile,setshowprofile] = useState(false);
   const [showchat, setshowchat] = useState(false);
+  const {setDarkTheme,darkTheme} = ChatState();
   const [leftbar, showleftbar] = useState(false);
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   
   
 
   return (
-    <div className={`${!isMobile && "bg-green-600"}`}>
+   
+    <div className={`${!isMobile && `${darkTheme?"bg-orange-500":"bg-green-600"}`}`}>
       <div
-        className={`scale-x-[98%] scale-y-[95%] border rounded-2xl overflow-hidden`}
+        className={`scale-x-[98%] scale-y-[95%]  rounded-2xl overflow-hidden`}
       >
         <div className="h-[41.5rem] md:h-lvh overflow-hidden">
           {!showchat && (
@@ -46,7 +48,8 @@ function ChatPage() {
                 leftbar={leftbar}
                 showleftbar={showleftbar}
                 showchat={showchat}
-               
+                
+
                 setshowchat={setshowchat}
               />
             )

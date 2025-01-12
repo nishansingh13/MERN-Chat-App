@@ -21,6 +21,7 @@ import axios from "axios";
 import { useState } from "react";
 
 function Groupchat({ setIsOpen }) {
+ 
   const [groupchatname, setgroupchatname] = useState("");
   const [selectedusers, setselectedusers] = useState([]);
   const [search, setsearch] = useState("");
@@ -46,7 +47,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/user?search=${search}`,
+        `http://192.168.1.11:5000/api/user?search=${search}`,
         config
       );
       setsearchresults(data);
@@ -78,7 +79,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.post(
-        "https://mern-chat-app-5-lyff.onrender.com/api/chat/group",
+        "http://192.168.1.11:5000/api/chat/group",
         {
           name: groupchatname,
           users: JSON.stringify(selectedusers.map((u) => u._id)),

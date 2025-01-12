@@ -22,7 +22,7 @@ import { useSocket } from "@/Context/SocketProvider";
 
 var selectedChatcompare;
 function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-5-lyff.onrender.com/";
+  const endpoint = "http://192.168.1.11:5000/";
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [calling,setCalling]=useState(false);
@@ -38,7 +38,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const typingTimeoutRef = useRef(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   const isMobile = useMediaQuery({query:"(max-width:768px)"});  
-  const {messages,setMessages} = ChatState();
+  const {messages,setMessages,darkTheme,setDarkTheme} = ChatState();
   const navigate = useNavigate();
   const updateNewestMessage = (chatId, message) => {
     setnewestmessage((prevState) => ({
@@ -59,7 +59,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-5-lyff.onrender.com/api/message/${selectedChat._id}`,
+        `http://192.168.1.11:5000/api/message/${selectedChat._id}`,
         config
       );
       setMessages(data);
@@ -136,7 +136,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         };
   
         const { data } = await axios.post(
-          "https://mern-chat-app-5-lyff.onrender.com/api/message",
+          "http://192.168.1.11:5000/api/message",
           {
             content: messageContent,
             chatId: selectedChat._id,
@@ -315,7 +315,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     
 
     <div
-      className={` top-[0rem] h-[100%] md:ml-[25rem] bg-[#F5F6FA] overflow-hidden`}
+      className={` top-[0rem] h-[100%] md:ml-[25rem] ${darkTheme?"bg-[#1e1e1e]":"bg-[#F5F6FA]"} overflow-hidden`}
       
     >
          {open && (
@@ -340,14 +340,14 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 
     {
   !selectedChat ? (
-    <div className="text-white bg-white h-lvh  flex flex-col items-center justify-center text-[2rem] overflow-hidden ">
+    <div className={`text-white ${darkTheme?"bg-[#1e1e1e]":"bg-white"} h-lvh  flex flex-col items-center justify-center text-[2rem] overflow-hidden`}>
       
-      <div className="flex gap-2 font-semibold text-green-600">
+      <div className={`flex gap-2 font-semibold ${darkTheme?"text-orange-500":"text-green-600"} `}>
         <div className="relative top-3"><MessageSquareText size={30}/></div>
         <div className="">Chatify {!isMobile?"Web":""}</div>
       </div>
 
-      <div className="text-[60%] text-green-600">Responsive Chatting Web App</div>
+      <div className={`text-[60%] ${darkTheme?"text-orange-500":"text-green-600"} `}>Responsive Chatting Web App</div>
      
 
 
@@ -356,12 +356,12 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     loading ? (
       
       <div className="flex justify-center items-center h-full">
-        <div><Loader2 className="animate-spin text-green-600" size={80}/></div>
+        <div><Loader2 className={`animate-spin ${darkTheme?"text-orange-500":"text-green-600"}`} size={80}/></div>
       </div>
     ) : (
       // The rest of your chat content here
       <div className={`overflow-hidden`}>
-        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"}`}>
+        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"} ${darkTheme?"bg-[#343434] text-white":""}`}>
           <div className="relative flex items-center justify-between ">
             <div className="flex">
               {isMobile && (
@@ -396,7 +396,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             
             <div>
             <PhoneCall 
-  className="cursor-pointer text-green-600" 
+  className={`cursor-pointer ${darkTheme?"text-orange-500":"text-green-600"}`}
   onClick={() => {
     handleSubmit();
     setCalling(true);
@@ -561,7 +561,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             >
              
-              <Smile className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"}`} />
+              <Smile className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} ${darkTheme?"text-white":""}`} />
             </button>
            {!plusloading?(
             <button
@@ -570,15 +570,15 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               
             >
              <label htmlFor="file-put">
-              <Plus className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} cursor-pointer`} />
+              <Plus className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} cursor-pointer ${darkTheme?"text-white":""}`} />
               </label>
               <input type="file" className="hidden"  id="file-put" onChange={(e)=>generatelink(e.target.files[0])}/>
          </button>
 ):(
-  <div className={`${!isMobile?"top-5":"top-3"} left-1 text-green-600 relative`}><Loader2 className="animate-spin"/></div>
+  <div className={`${!isMobile?"top-5":"top-3"} left-1 text-green-600 relative `}><Loader2 className="animate-spin"/></div>
 )}
             <Input
-              className={`md:w-[60rem] rounded-3xl ${isDesktop ? "mt-3 bg-gray-200" : "mt-1 bg-white"} flex-1 placeholder:text-black`}
+              className={` md:w-[60rem] rounded-3xl ${isDesktop ? "mt-3 bg-gray-200" : "mt-1 bg-white"} ${darkTheme?"bg-[#3b3b3b] text-white":""} flex-1 placeholder:${darkTheme?"text-gray-500":"text-black"}`}
               placeholder="Type your message here..."
               onChange={typingHandler}
               value={newMessage}
@@ -590,7 +590,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             />
             <button type="submit">
               <SendHorizonal
-                className={`border bg-green-600 p-2 rounded-full relative ${isMobile ? "top-1" : "top-2"} text-white right-2 mt-[-0.3rem]`}
+                className={`p-2 rounded-full relative ${isMobile ? "top-1" : "top-2"} text-white right-2 mt-[-0.5rem] ${darkTheme?"bg-orange-500 ":"bg-green-600 "}`}
                 size={isMobile ? 35 : 40}
               />
             </button>
