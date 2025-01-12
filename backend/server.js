@@ -40,25 +40,7 @@ app.use('/mdata', async (req, res) => {
 });
 
 /*--------------------------------- DEPLOYMENT -------------------------*/
-const __dirname1 = path.resolve();
-if (process.env.NODE_ENV === "production") {
-    console.log("Production mode: Serving static files");
 
-    // Correct path to the `dist` folder located outside `backend`
-    app.use(express.static(path.join(__dirname1, "../my-app/dist")));
-
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname1, process.cwd(),"my-app","dist","index.html"));
-    });
-} else {
-    console.log("Development mode: API is running");
-    app.get("/", (req, res) => {
-        res.send("API RUNNING");
-    });
-}
-app.use("/ok",(req,res)=>{
-    res.send("yeah u can do it");
-})
 /*--------------------------------- DEPLOYMENT -------------------------*/
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
