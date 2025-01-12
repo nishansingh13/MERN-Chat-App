@@ -236,7 +236,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                         key={chat._id}
                         className={`cursor-pointer pl-2 rounded-xl ${selectedChat === chat
                             ? `${darkTheme?"bg-orange-500 text-black":"bg-green-600 text-white"} `
-                            : `hover:transition-all hover:bg-gray-200 bg-gray-50 ${darkTheme?"bg-[#313030] text-white hover:bg-[#403f3f]":""}`
+                            : `hover:transition-all hover:bg-gray-200 bg-gray-50 ${darkTheme?"bg-zinc-800 text-white hover:bg-zinc-700":""}`
                           }`}
 
                         onClick={() => {

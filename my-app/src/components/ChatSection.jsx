@@ -361,7 +361,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
     ) : (
       // The rest of your chat content here
       <div className={`overflow-hidden`}>
-        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"} ${darkTheme?"bg-[#303030] text-white":""}`}>
+        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"} ${darkTheme?"bg-zinc-800 text-white":""}`}>
           <div className="relative flex items-center justify-between ">
             <div className="flex">
               {isMobile && (
