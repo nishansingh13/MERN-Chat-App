@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatState } from "@/Context/ChatProvider";
 import MyChats from "@/components/MyChats";
 import Slider from "@/components/supports/Slider";
@@ -19,11 +19,14 @@ function ChatPage() {
   const [leftbar, showleftbar] = useState(false);
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   
-  
+  useEffect(()=>{
+    const theme = JSON.parse(localStorage.getItem("theme"));
+    setDarkTheme(theme);
+  },[])
 
   return (
    
-    <div className={`${!isMobile && `${darkTheme?"bg-orange-500":"bg-green-600"}`}`}>
+    <div className={`${!isMobile && `${darkTheme?"bg-orange-500":"bg-green-600"}`} ${isMobile && darkTheme && "bg-orange-500"}`}>
       <div
         className={`scale-x-[98%] scale-y-[95%]  rounded-2xl overflow-hidden`}
       >

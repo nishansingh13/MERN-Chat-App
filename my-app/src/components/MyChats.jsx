@@ -2,7 +2,7 @@ import { ChatState } from "@/Context/ChatProvider";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Groupchat from "./supports/Groupchat"; // Import Groupchat component
-import { MessageCircle, MessageSquareMore, MessageSquareText, Moon, Sun } from "lucide-react";
+import { File, FileVideo2, Image, MessageCircle, MessageSquareMore, MessageSquareText, Moon, Sun } from "lucide-react";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 import { MoreVertical } from "lucide-react";
@@ -103,6 +103,27 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
   const getLatestMessage = (chatId) => {
     return newestmessage[chatId] || selectedChat?.latestMessage?.content;
   };
+  const handleDark = ()=>{
+    setDarkTheme(!darkTheme);
+    localStorage.setItem("theme", JSON.stringify(!darkTheme));
+   
+    
+  }
+  const returnproper = (query)=>{
+    if(query.content.includes("dqsx8yzbs/image/upload")){
+          
+          return <span className="flex"><Image className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>Image</span></span>
+    }
+    else if(query.content.includes("dqsx8yzbs/video/upload")){
+          
+      return <span className="flex"><FileVideo2 className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>Video</span></span>
+}
+else if(query.content.includes("dqsx8yzbs/raw/upload")){
+          
+  return <span className="flex"><File className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>File</span></span>
+}
+    return query.content;
+  }
 
   useEffect(() => {
 
@@ -139,7 +160,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                   </div>
 
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={()=>setDarkTheme(!darkTheme)} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleDark} className="cursor-pointer">
                   <div className="flex gap-1 cursor-pointer">
                     {darkTheme?(<Moon size={20}/>):(
                     <Sun  size={20}/>)}
@@ -172,47 +193,47 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
             <ScrollArea className=" h-[calc(100lvh-10rem)] " >
               {
                 chatloading ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                  <div className="flex flex-col gap-4 ">
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
+                    <div className="flex items-center space-x-4 ">
+                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
+                      <div className="space-y-2  ">
+                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
+                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
                       </div>
                     </div>
                   </div>
@@ -278,7 +299,7 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
                                     {
                                       newestmessage[chat?._id] !== undefined
                                         ? newestmessage[chat._id]
-                                        : (chat.latestMessage ? chat.latestMessage.content : "")
+                                        : (chat.latestMessage ?returnproper(chat.latestMessage) : "")
                                     }
                                   </div>
 
