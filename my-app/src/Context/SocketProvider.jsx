@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }) => {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const endpoint = "https://mern-chat-app-fk6w.onrender.com/";
+        const endpoint = "https://mern-chat-app-fk6w.onrender.com";
         socketRef.current = io(endpoint);
 
         return () => {

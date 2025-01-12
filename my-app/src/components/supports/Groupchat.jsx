@@ -47,7 +47,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.get(
-        `https://mern-chat-app-fk6w.onrender.com//api/user?search=${search}`,
+        `https://mern-chat-app-fk6w.onrender.com/api/user?search=${search}`,
         config
       );
       setsearchresults(data);
@@ -79,7 +79,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.post(
-        "https://mern-chat-app-fk6w.onrender.com//api/chat/group",
+        "https://mern-chat-app-fk6w.onrender.com/api/chat/group",
         {
           name: groupchatname,
           users: JSON.stringify(selectedusers.map((u) => u._id)),
