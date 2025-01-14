@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
-import ReactPlayer from "react-player";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
 import peer from "../service/peer";
@@ -12,6 +11,8 @@ function Room() {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
+  const myVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,6 +23,9 @@ function Room() {
           audio: true,
         });
         setMyStream(stream);
+        if (myVideoRef.current) {
+          myVideoRef.current.srcObject = stream;
+        }
         stream.getTracks().forEach((track) => peer.peer.addTrack(track, stream));
       } catch (error) {
         console.error("Error accessing media devices:", error);
@@ -60,7 +64,10 @@ function Room() {
     peer.peer.addEventListener("negotiationneeded", handleNegotiationNeeded);
 
     peer.peer.addEventListener("track", (event) => {
-      setRemoteStream(event.streams[0]);
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+        setRemoteStream(event.streams[0]);
+      }
     });
 
     return () => {
@@ -93,26 +100,21 @@ function Room() {
     <div className="w-full h-screen bg-[#F7E9D2] flex items-center justify-center">
       <div className="flex flex-col items-center space-y-4">
         {remoteStream && (
-          <div className="w-[60%]">
-            <ReactPlayer
-              playing
-              muted
-              url={remoteStream}
-              width="100%"
-              height="100%"
-            />
-          </div>
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="w-[60%] rounded-lg"
+          />
         )}
         {myStream && (
-          <div className="w-[20%]">
-            <ReactPlayer
-              playing
-              muted
-              url={myStream}
-              width="100%"
-              height="100%"
-            />
-          </div>
+          <video
+            ref={myVideoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-[20%] rounded-lg"
+          />
         )}
         <button
           onClick={handleStopCall}
