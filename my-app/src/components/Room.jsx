@@ -164,7 +164,7 @@ function Room() {
     <>
 
       <div className="w-full h-screen bg-[#F7E9D2]">
-      <button onClick={handleCallUser} className="bg-black text-white rounded-md h-[3rem] w-[7rem]">Reconnect if not working</button>
+      <button onClick={()=>handleCallUser} className="bg-black text-white rounded-md h-[3rem] w-[7rem]">Reconnect if not working</button>
 
         <div className="flex mx-[1rem]">
           {remoteStream ? (
