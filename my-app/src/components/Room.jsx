@@ -174,13 +174,7 @@ function Room() {
             height="100px"
             width="200px"
             url={myStream}
-            config={{
-              file: {
-                attributes: {
-                  playsinline: true,  // Ensures inline playback
-                },
-              },
-            }}
+            
           />
         </div>
       )}
@@ -193,13 +187,6 @@ function Room() {
             height="100px"
             width="200px"
             url={remoteStream}
-            config={{
-              file: {
-                attributes: {
-                  playsinline: true,  // Ensures inline playback
-                },
-              },
-            }}
           />
         </div>
       )}
