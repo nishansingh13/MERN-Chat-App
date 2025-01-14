@@ -165,6 +165,7 @@ function Room() {
 
       <div className="w-full h-screen bg-[#F7E9D2]">
         <div className="flex mx-[1rem]">
+          <button onClick={handleCallUser} className="bg-black text-white rounded-md">Reconnect if not working</button>
           {remoteStream && (
           
 
@@ -189,7 +190,7 @@ function Room() {
             </div>
           )}
           {myStream && (
-           
+            
             <div className="w-[20%] h-[100%] relative top-[26rem] right-[10rem] overflow-hidden rounded-xl ">
               
               <ReactPlayer playing muted width="100%" height="auto" url={myStream} />
