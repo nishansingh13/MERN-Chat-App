@@ -3,7 +3,7 @@ import ReactPlayer from "react-player";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
 import peer from "../service/peer";
-import { Loader2, PhoneOffIcon } from "lucide-react";
+import { PhoneOffIcon } from "lucide-react";
 
 function Room() {
   const { state } = useLocation();
@@ -164,10 +164,10 @@ function Room() {
     <>
 
       <div className="w-full h-screen bg-[#F7E9D2]">
-      <button onClick={()=>handleCallUser} className="bg-black text-white rounded-md h-[3rem] w-[7rem]">Reconnect if not working</button>
+      <button onClick={handleCallUser} className="bg-black text-white rounded-md h-[3rem] w-[7rem]">Reconnect if not working</button>
 
         <div className="flex mx-[1rem]">
-          {remoteStream ? (
+          {remoteStream && (
           
 
             <div className="w-[60%] relative top-4">
@@ -190,15 +190,12 @@ function Room() {
 
 
             </div>
-          ):
-          (
-           <div className="w-[60%] relative top-4 bg-black text-orange-500">Loading user video <Loader2 className="p-1"/></div> 
           )}
           {myStream && (
             
             <div>
 
-            <div className="w-[10rem] h-[rem]  overflow-hidden rounded-xl bg-black ">
+            <div className="w-[10rem] h-[7.3rem]  overflow-hidden rounded-xl bg-black ">
               
               <ReactPlayer playing muted width="100%" height="100%" url={myStream} />
             </div>
