@@ -173,9 +173,11 @@ function Room() {
           <ReactPlayer
             playing
             muted
+            playsinline
             height="100px"
             width="200px"
             url={myStream}
+          
             
           />
         </div>
