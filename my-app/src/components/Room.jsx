@@ -9,7 +9,6 @@ function Room() {
   const { state } = useLocation();
   const { email, id } = state || {};
   const socketRef = useSocket();
-  const [loading ,setLoading] = useState(false);
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
@@ -155,17 +154,6 @@ function Room() {
     handleNegoIncoming,
     handleNegoFinal,
   ]);
- const afterTimeout = () => {
-  // setLoading(false);
-  console.log("Additional action executed after timeout.");
-  handleCallUser();
-};
-
-useEffect(()=>{
-  setTimeout(afterTimeout, 5000);
-  // setLoading(false);
-},[])
-
   const back = () => {
     navigate("/chats");
     socketRef.current.emit("stop call");
@@ -207,7 +195,7 @@ useEffect(()=>{
             
             <div>
 
-            <div className="w-[10rem] relative top-[30rem]  overflow-hidden rounded-xl bg-black ">
+            <div className="w-[10rem] h-[rem]  overflow-hidden rounded-xl bg-black ">
               
               <ReactPlayer playing muted width="100%" height="100%" url={myStream} />
             </div>
