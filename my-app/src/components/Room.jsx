@@ -3,12 +3,13 @@ import ReactPlayer from "react-player";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
 import peer from "../service/peer";
-import { PhoneOffIcon } from "lucide-react";
+import { Loader2, PhoneOffIcon } from "lucide-react";
 
 function Room() {
   const { state } = useLocation();
   const { email, id } = state || {};
   const socketRef = useSocket();
+  const [loading ,setLoading] = useState(false);
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
@@ -154,6 +155,17 @@ function Room() {
     handleNegoIncoming,
     handleNegoFinal,
   ]);
+ const afterTimeout = () => {
+  // setLoading(false);
+  console.log("Additional action executed after timeout.");
+  handleCallUser();
+};
+
+useEffect(()=>{
+  setTimeout(afterTimeout, 5000);
+  setLoading(false);
+},[])
+
   const back = () => {
     navigate("/chats");
     socketRef.current.emit("stop call");
@@ -164,7 +176,8 @@ function Room() {
     <>
 
       <div className="w-full h-screen bg-[#F7E9D2]">
-      <button onClick={handleCallUser} className="bg-black text-white rounded-md h-[3rem] w-[7rem]">Reconnect if not working</button>
+        {(remoteStream && myStream)?(
+          <div>
 
         <div className="flex mx-[1rem]">
           {remoteStream && (
@@ -177,10 +190,11 @@ function Room() {
               >
                 
                 <ReactPlayer
+                
                   width="100%"
                   height="100%"
                   playing
-                  muted
+                  
                   url={remoteStream}
                 />
               </div>
@@ -194,14 +208,16 @@ function Room() {
             
             <div>
 
-            <div className="w-[20%] h-[100%] relative top-[26rem] right-[10rem] overflow-hidden rounded-xl ">
+            <div className="w-[10rem] relative top-[30rem]  overflow-hidden rounded-xl bg-black ">
               
-              <ReactPlayer playing muted width="100%" height="auto" url={myStream} />
+              <ReactPlayer playing muted width="100%" height="100%" url={myStream} />
             </div>
 
             </div>
           )}
         </div>
+        </div>
+        ):(<div className="bg-black h-full flex justify-center items-center text-orange-500 text-[1.5rem]">Please wait <Loader2 className="animate-spin relative p-1"/></div>)}
       </div>
 
     </>
