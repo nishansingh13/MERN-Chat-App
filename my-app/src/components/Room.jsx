@@ -183,13 +183,13 @@ function Room() {
       {remoteStream && (
         <div>
           <h3>Remote Stream</h3>
-          <video
+          <ReactPlayer
             playing
             muted
             playsinline
             height="100px"
             width="200px"
-            src={remoteStream}
+            url={remoteStream}
           />
         </div>
       )}
