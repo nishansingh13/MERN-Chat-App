@@ -163,7 +163,7 @@ function Room() {
 
 useEffect(()=>{
   setTimeout(afterTimeout, 5000);
-  setLoading(false);
+  console.log("done");
 },[])
 
   const back = () => {
@@ -178,6 +178,7 @@ useEffect(()=>{
       <div className="w-full h-screen bg-[#F7E9D2]">
         {(remoteStream && myStream)?(
           <div>
+            <button onClick={handleCallUser}>Click here if video didnt worked</button>
 
         <div className="flex mx-[1rem]">
           {remoteStream && (
