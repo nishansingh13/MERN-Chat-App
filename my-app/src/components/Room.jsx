@@ -80,6 +80,9 @@ function Room() {
     },
     [sendStreams]
   );
+  useEffect(()=>{
+      handleCallUser();
+  },[remoteSocketId])
 
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer();
