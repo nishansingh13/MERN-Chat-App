@@ -118,9 +118,9 @@ function Room() {
       setRemoteStream(remoteStream);
     });
   }, []);
-  // useEffect(() => {
-  //   handleCallUser();
-  // }, [remoteSocketId, remoteStream]);
+  useEffect(() => {
+    handleCallUser();
+  }, [remoteSocketId]);
   const handleStopCall = () => {
     navigate("/chats");
     window.location.reload();
