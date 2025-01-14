@@ -161,6 +161,9 @@ io.on("connection", (socket) => {
   socket.on("peer nego done", ({ to, ans }) => {
     io.to(to).emit("peer nego final", { from: socket.id, ans }); // Corrected 'offer' to 'ans'
   });
+  socket.on("button",()=>{
+    io.emit("button htao");
+  })
   
   socket.off("setup", () => {
         console.log("User disconnected");

@@ -130,6 +130,7 @@ function Room() {
       socketRef.current.on("call accepted", handleCallAccepted);
       socketRef.current.on("nego needed", handleNegoIncoming);
       socketRef.current.on("peer nego final", handleNegoFinal);
+      socketRef.current.on("button htao",()=>{setbutton(true)});
     }
 
     return () => {
@@ -139,6 +140,7 @@ function Room() {
         socketRef.current.off("call accepted", handleCallAccepted);
         socketRef.current.off("nego needed", handleNegoIncoming);
         socketRef.current.off("peer nego final", handleNegoFinal);
+        socketRef.current.off("button htao",()=>{setbutton(true)});
       }
     };
   }, [
@@ -159,7 +161,7 @@ function Room() {
       {remoteSocketId &&remoteStream && !button &&(
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
-          onClick={() => { handleCallUser(); setbutton(true); }}
+          onClick={() => { handleCallUser(); socketRef.current.emit("button") }}
           disabled={!remoteSocketId} // Disable until remoteSocketId is set
         >
           Call
