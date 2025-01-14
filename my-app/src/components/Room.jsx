@@ -187,7 +187,6 @@ function Room() {
           <h3>Remote Stream</h3>
           <ReactPlayer
             playing
-            muted
             playsinline
             height="100px"
             width="200px"
