@@ -80,7 +80,7 @@ function Slider({ open, setOpen }) {
       onClose={() => setOpen(false)}
       className={`transition-all w-[25rem] o ${open ? "translate-x-0" : "-translate-x-full"}`}
     >
-      <SidebarContent className={`h-full overflow-hidden bg-[#1e1e1e]`}> {/* added overflow-hidden */}
+      <SidebarContent className={`h-full overflow-hidden ${darkTheme&& "bg-[#1e1e1e]"}`}> {/* added overflow-hidden */}
         <SidebarGroup>
           <button
             onClick={() => setOpen(false)}
