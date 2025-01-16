@@ -163,7 +163,6 @@ function Room() {
             height="100px"
             width="200px"
             url={myStream}
-            
           />
         </div>
       )}
@@ -176,7 +175,6 @@ function Room() {
             height="100px"
             width="200px"
             url={remoteStream}
-            
           />
         </div>
       )}
