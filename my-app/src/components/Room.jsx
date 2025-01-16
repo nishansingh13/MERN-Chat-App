@@ -89,9 +89,9 @@ function Room() {
     },
     [sendStreams]
   );
-  useEffect(()=>{
-      handleCallUser();
-  },[remoteSocketId])
+  // useEffect(()=>{
+  //     handleCallUser();
+  // },[remoteSocketId])
 
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer();
@@ -165,7 +165,7 @@ function Room() {
   return (
     <>
     
-      {remoteSocketId &&remoteStream && !button &&(
+      {myStream && (
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
           onClick={() => { handleCallUser(); socketRef.current.emit("button") }}
