@@ -165,7 +165,7 @@ function Room() {
   return (
     <>
     
-      {myStream && (
+      (
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
           onClick={() => { handleCallUser(); socketRef.current.emit("button") }}
@@ -173,7 +173,7 @@ function Room() {
         >
           Start Call
         </button>
-      )}
+      )
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
           onClick={() =>{back()}}
