@@ -155,7 +155,7 @@ function Room() {
     handleNegoFinal,
   ]);
   const back = () => {
-    navigate("/chats");
+    // navigate("/chats");
     socketRef.current.emit("stop call");
     // window.location.reload();
   }
