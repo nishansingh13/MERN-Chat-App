@@ -1,19 +1,23 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import peer from "../service/peer";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ChatState } from "@/Context/ChatProvider";
 import { io } from "socket.io-client";
 import { useSocket } from "@/Context/SocketProvider";
+import { Loader2 } from "lucide-react";
 
 function Room() {
   const { state } = useLocation();
   const { email, id } = state || {};
+  const [check,setCheck]=useState(null);
+  const [button,setbutton] = useState(false);
   const socketRef=useSocket();
+  const [loading,setLoading]=useState(false);
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
-
+  const navigate = useNavigate();
   // User joined room logic
   useEffect(() => {
     // console.log(socketRef.current.connected);
@@ -49,6 +53,7 @@ function Room() {
 
   const handleIncomingCall = useCallback(
     async ({ from, offer }) => {
+      console.log("ye kaha aaya h");
       setRemoteSocketId(from);
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -75,11 +80,18 @@ function Room() {
   const handleCallAccepted = useCallback(
     ({ from, ans }) => {
       peer.setLocalDescription(ans);
-      console.log("Call Accepted");
+      console.log("Call Accepted sender side ka msg");
       sendStreams();
+      if(!check){
+      handleCallUser();
+      setCheck("exist");
+      }
     },
     [sendStreams]
   );
+  useEffect(()=>{
+      handleCallUser();
+  },[remoteSocketId])
 
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer();
@@ -120,6 +132,8 @@ function Room() {
       socketRef.current.on("call accepted", handleCallAccepted);
       socketRef.current.on("nego needed", handleNegoIncoming);
       socketRef.current.on("peer nego final", handleNegoFinal);
+      socketRef.current.on("button htao",()=>{setbutton(true)});
+      socketRef.current.on("stop the call",()=>{navigate("/chats");window.location.reload})
     }
 
     return () => {
@@ -129,6 +143,9 @@ function Room() {
         socketRef.current.off("call accepted", handleCallAccepted);
         socketRef.current.off("nego needed", handleNegoIncoming);
         socketRef.current.off("peer nego final", handleNegoFinal);
+        socketRef.current.off("button htao",()=>{setbutton(true)});
+        socketRef.current.off("stop the call",()=>{navigate("/chats");window.location.reload})
+
       }
     };
   }, [
@@ -139,45 +156,72 @@ function Room() {
     handleNegoIncoming,
     handleNegoFinal,
   ]);
+  const back = ()=>{
+      navigate("/chats");
+      socketRef.current.emit("stop call");
+      window.location.reload();
+      }
 
   return (
     <>
-      <div>Room Page</div>
-      <div>{remoteSocketId ? "Connected" : "No one in room"}</div>
-      <br />
-      {remoteSocketId && (
+    
+      {remoteSocketId &&remoteStream && !button &&(
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
-          onClick={handleCallUser}
+          onClick={() => { handleCallUser(); socketRef.current.emit("button") }}
           disabled={!remoteSocketId} // Disable until remoteSocketId is set
         >
-          Call
+          Start Call
         </button>
       )}
+        <button
+          className="bg-black p-1 px-2 text-white rounded-md m-2"
+          onClick={() =>{back()}}
+          disabled={!remoteSocketId} // Disable until remoteSocketId is set
+        >
+          End Call
+        </button>
+      <div className="bg-black flex h-screen">
+      {remoteStream && (
+        <div className="bg-black overflow-hidden w-[60%] rounded-md">
+          
+          <ReactPlayer
+            playing
+            playsinline
+            height="45rem"
+            width=""
+            url={remoteStream}
+            style={{
+              transform:'scaleX(-1)'
+            }}
+          />
+        </div>
+      
+      )}
+    
       {myStream && (
-        <div>
+        <div className="relative top-[30rem] bg-gray-50 h-[10rem]">
           <h3>My Stream</h3>
           <ReactPlayer
             playing
             muted
+            playsinline
             height="100px"
             width="200px"
             url={myStream}
+            style={{
+              transform:'scaleX(-1)',
+              
+            }}
+          
+            
           />
         </div>
       )}
-      {remoteStream && (
-        <div>
-          <h3>Remote Stream</h3>
-          <ReactPlayer
-            playing
-            muted
-            height="100px"
-            width="200px"
-            url={remoteStream}
-          />
-        </div>
-      )}
+      </div>
+      
+     
+  
     </>
   );
 }
