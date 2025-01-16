@@ -118,9 +118,7 @@ function Room() {
       setRemoteStream(remoteStream);
     });
   }, []);
-  useEffect(() => {
-    handleCallUser();
-  }, [remoteSocketId, remoteStream]);
+ 
   const handleStopCall = () => {
     navigate("/chats");
     window.location.reload();
@@ -189,10 +187,13 @@ function Room() {
             </div>
           )}
           {myStream && (
+            <div>
+            <button onClick={handleCallUser}>Call</button>
            
             <div className="w-[20%] h-[100%] relative top-[26rem] right-[10rem] overflow-hidden rounded-xl ">
               
               <ReactPlayer playing muted width="100%" height="auto" url={myStream} />
+            </div>
             </div>
           )}
         </div>
