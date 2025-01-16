@@ -9,6 +9,8 @@ import { useSocket } from "@/Context/SocketProvider";
 function Room() {
   const { state } = useLocation();
   const { email, id } = state || {};
+  const [check,setCheck]=useState(null);
+  const [button,setbutton] = useState(false);
   const socketRef=useSocket();
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
@@ -49,6 +51,7 @@ function Room() {
 
   const handleIncomingCall = useCallback(
     async ({ from, offer }) => {
+      console.log("ye kaha aaya h");
       setRemoteSocketId(from);
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -75,11 +78,18 @@ function Room() {
   const handleCallAccepted = useCallback(
     ({ from, ans }) => {
       peer.setLocalDescription(ans);
-      console.log("Call Accepted");
+      console.log("Call Accepted sender side ka msg");
       sendStreams();
+      if(!check){
+      handleCallUser();
+      setCheck(1);
+      }
     },
     [sendStreams]
   );
+  useEffect(()=>{
+      handleCallUser();
+  },[remoteSocketId])
 
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer();
@@ -145,10 +155,11 @@ function Room() {
       <div>Room Page</div>
       <div>{remoteSocketId ? "Connected" : "No one in room"}</div>
       <br />
-      {remoteSocketId && (
+      
+      {remoteSocketId &&remoteStream && !button &&(
         <button
           className="bg-black p-1 px-2 text-white rounded-md m-2"
-          onClick={handleCallUser}
+          onClick={() => { handleCallUser(); setbutton(true); }}
           disabled={!remoteSocketId} // Disable until remoteSocketId is set
         >
           Call
@@ -163,6 +174,13 @@ function Room() {
             height="100px"
             width="200px"
             url={myStream}
+            config={{
+              file: {
+                attributes: {
+                  playsinline: true,  // Ensures inline playback
+                },
+              },
+            }}
           />
         </div>
       )}
@@ -175,6 +193,13 @@ function Room() {
             height="100px"
             width="200px"
             url={remoteStream}
+            config={{
+              file: {
+                attributes: {
+                  playsinline: true,  // Ensures inline playback
+                },
+              },
+            }}
           />
         </div>
       )}
