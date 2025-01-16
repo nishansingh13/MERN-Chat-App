@@ -163,6 +163,7 @@ function Room() {
             height="100px"
             width="200px"
             url={myStream}
+            playsinline
           />
         </div>
       )}
@@ -175,6 +176,7 @@ function Room() {
             height="100px"
             width="200px"
             url={remoteStream}
+            playsinline
           />
         </div>
       )}
