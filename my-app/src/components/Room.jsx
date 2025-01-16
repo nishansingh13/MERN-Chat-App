@@ -183,7 +183,7 @@ function Room() {
         </button>
       <div className="bg-black flex h-screen">
       {remoteStream && (
-        <div className="bg-black overflow-hidden w-[60%] rounded-md">
+        <div className="overflow-hidden w-[60%] rounded-md">
           
           <ReactPlayer
             playing
