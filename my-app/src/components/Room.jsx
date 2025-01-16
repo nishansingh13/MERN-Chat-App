@@ -133,7 +133,7 @@ function Room() {
       socketRef.current.on("nego needed", handleNegoIncoming);
       socketRef.current.on("peer nego final", handleNegoFinal);
       socketRef.current.on("button htao",()=>{setbutton(true)});
-      socketRef.current.on("stop the call",()=>{navigate("/chats");window.location.reload()})
+      socketRef.current.on("stop the call",()=>{navigate("/chats");window.location.reload})
     }
 
     return () => {
@@ -144,7 +144,7 @@ function Room() {
         socketRef.current.off("nego needed", handleNegoIncoming);
         socketRef.current.off("peer nego final", handleNegoFinal);
         socketRef.current.off("button htao",()=>{setbutton(true)});
-        socketRef.current.off("stop the call",()=>{navigate("/chats");window.location.reload()})
+        socketRef.current.off("stop the call",()=>{navigate("/chats");window.location.reload})
 
       }
     };
