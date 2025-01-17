@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
-import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck, PhoneCall} from "lucide-react";
+import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck, PhoneCall, ArrowDown} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
 import { Settings } from "lucide-react";
@@ -311,11 +311,22 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       scrollRef.current.scrollToBottom();
     }
   }, [messages]);
-   const deleteMessage =(query)=>{
-    console.log("clickled",query._id)
-    
-   
-   }
+  const deleteMessage = async (id) => {
+    try {
+        console.log("Deleting message with ID:", id);
+
+        const res = await axios.delete("http://localhost:5000/api/message/delete", {
+            data: { id },
+        });
+
+        if (res.status === 200) {
+            console.log("Message deleted successfully:", res.data);
+        }
+    } catch (err) {
+        console.error("Error while deleting message:", err);
+    }
+};
+
  
   return (
     
@@ -445,8 +456,9 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
               {messages.map((u,index) => (
                 <div key={u._id}> 
                 {/* {console.log( messages[index-1],"index",index)} */}
+              
                 <div
-                    onClick={()=>deleteMessage(u)}
+                   
                   className={`${
                     u.sender._id === user._id
                       ? "bg-green-100 p-1 my-2 ml-auto text-left"
@@ -461,7 +473,9 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                         ? "10px 10px 0 10px"
                         : "10px 10px 10px 0",
                   }}
-                >  {u.chat.isGroupChat && u.sender._id!==user._id &&
+                  
+                >  {u.sender._id===user._id &&<ArrowDown className="p-1 ml-auto"  onClick={()=>deleteMessage(u._id)}/>  }
+                {u.chat.isGroupChat && u.sender._id!==user._id &&
                   <div className="text-[60%] text-gray-500 mr-auto text-right">{u.sender.name}</div>}
 {u.content.includes("dqsx8yzbs/image/")  ? (
           <Dialog >
