@@ -57,8 +57,8 @@ const allMessages = asynchandler(async(req,res)=>{
 const deleteMessage = asynchandler(async(req,res)=>{
         try{
             const data = req.body;
-            const message = await Message.findByIdAndDelete(data)
-            res.json(message)
+           
+            res.json(data,"correct")
 
         }catch{
             res.status(400);
