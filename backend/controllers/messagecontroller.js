@@ -54,4 +54,15 @@ const allMessages = asynchandler(async(req,res)=>{
             
     }
 })
-module.exports = { sendmessage , allMessages };
+const deleteMessage = asynchandler(async(req,res)=>{
+        try{
+            const data = req.body;
+            const message = await Message.findByIdAndDelete(data)
+            res.json(message)
+
+        }catch{
+            res.status(400);
+
+        }
+})
+module.exports = { sendmessage , allMessages ,deleteMessage};

@@ -37,7 +37,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const [socketConnected, setSocketConnected] = useState(false);
   const typingTimeoutRef = useRef(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
-  const isMobile = useMediaQuery({query:"(max-width:768px)"});  
+  const isMobile = useMediaQuery({query:"(max-width:768px)"}); 
+  const [clicked,SetClicked]=useState(false); 
   const {messages,setMessages,darkTheme,setDarkTheme} = ChatState();
   const navigate = useNavigate();
   const updateNewestMessage = (chatId, message) => {
@@ -310,6 +311,11 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
       scrollRef.current.scrollToBottom();
     }
   }, [messages]);
+   const deleteMessage =(query)=>{
+    console.log("clickled",query._id)
+    
+   
+   }
  
   return (
     
@@ -440,12 +446,14 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
                 <div key={u._id}> 
                 {/* {console.log( messages[index-1],"index",index)} */}
                 <div
-                  
+                    onClick={()=>deleteMessage(u)}
                   className={`${
                     u.sender._id === user._id
                       ? "bg-green-100 p-1 my-2 ml-auto text-left"
                       : "bg-blue-300 my-2 p-1 mr-auto text-left"
-                  } w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md
+                   
+                    
+                  }    ${clicked &&  "bg-black text-blue-600 "} w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md
                 `}
                   style={{
                     borderRadius:
