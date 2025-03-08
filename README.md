@@ -40,7 +40,7 @@ A modern real-time chat application built with React, Node.js, Socket.IO, and Mo
 
 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone <https://github.com/nishansingh13/MERN-Chat-App>
 ```
 
 2. Install Backend Dependencies
