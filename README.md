@@ -1,90 +1,91 @@
-# Chatify
+# Chatify - Real-Time Chat Application
 
-Chatify is a real-time chat application built using the MERN stack (MongoDB, Express, React, Node.js) with **Socket.IO** for instant messaging. It allows users to communicate seamlessly with features like authentication, message statuses, and media sharing.
+A modern real-time chat application built with React, Node.js, Socket.IO, and MongoDB.
 
 ## Features
 
-- **Real-time Messaging** using Socket.IO
-- **User Authentication** (Sign up, Login, Logout)
-- **Message Read Status**
-- **Image Uploads** with Cloudinary
-- **Responsive UI** with Tailwind CSS
-- **WebRTC Integration** (Planned for future updates)
+- Real-time messaging
+- Video calling functionality
+- User authentication with email verification
+- Read receipts
+- Typing indicators
+- Emoji support
+- Dark/Light theme
+- Responsive design
 
 ## Tech Stack
 
-- **Frontend:** React, Vite, Tailwind CSS, ShadCN (for UI components)
-- **Backend:** Node.js, Express, MongoDB (Mongoose for ODM)
-- **Real-time Communication:** Socket.IO
-- **Authentication:** JWT (earlier) -> Moving to bcrypt-only authentication
-- **Image Storage:** Cloudinary
+### Frontend
+- React.js
+- Socket.IO Client
+- Tailwind CSS
+- Radix UI Components
+- React Router
 
-## Installation
+### Backend
+- Node.js
+- Express.js
+- Socket.IO
+- MongoDB
+- JWT Authentication
+
+## Getting Started
 
 ### Prerequisites
-Make sure you have the following installed:
-- Node.js & npm
-- MongoDB (local or Atlas for cloud storage)
+- Node.js
+- MongoDB
+- npm or yarn
 
-### Clone the Repository
-```sh
-git clone https://github.com/nishansingh13/MERN-Chat-App
-cd chatify
+### Installation
+
+1. Clone the repository
+```bash
+git clone <repository-url>
 ```
 
-### Backend Setup
-1. Navigate to the server directory:
-   ```sh
-   cd server
-   ```
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Create a `.env` file and add your environment variables:
-   ```sh
-   MONGO_URI=your-mongodb-uri
-   JWT_SECRET=your-secret-key
-   CLOUDINARY_CLOUD_NAME=your-cloud-name
-   CLOUDINARY_API_KEY=your-api-key
-   CLOUDINARY_API_SECRET=your-api-secret
-   ```
-4. Start the backend server:
-   ```sh
-   npm run dev
-   ```
+2. Install Backend Dependencies
+```bash
+cd backend
+npm install
+```
 
-### Frontend Setup
-1. Navigate to the client directory:
-   ```sh
-   cd client
-   ```
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Start the frontend:
-   ```sh
-   npm run dev
-   ```
+3. Install Frontend Dependencies
+```bash
+cd ../my-app
+npm install
+```
 
-## Usage
-- Sign up or log in to start chatting.
-- Add contacts and send messages in real time.
-- Upload and share images.
+4. Configure Environment Variables
+Create a .env file in the backend directory with:
+```
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+```
 
-## Future Improvements
-- WebRTC for voice & video calls
-- Group chat functionality
-- Message encryption
-- Push notifications
+5. Start the Application
+```bash
+# Start Backend
+cd backend
+npm run dev
 
-## Contributing
-Contributions are welcome! Feel free to fork the repo and submit pull requests.
+# Start Frontend (in a new terminal)
+cd my-app
+npm run dev
+```
+
+## Features in Detail
+
+- **Real-time Communication**: Implemented using Socket.IO for instant message delivery
+- **Video Calling**: Peer-to-peer video calling functionality
+- **Authentication**: Secure user authentication with email verification
+- **Message Status**: Real-time read receipts and typing indicators
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ## License
+
 This project is licensed under the MIT License.
 
-## Contact
-For questions or suggestions, reach out via GitHub or email.
+## Contributing
 
+Contributions are welcome! Please feel free to submit a Pull Request.
