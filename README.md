@@ -28,7 +28,7 @@ Make sure you have the following installed:
 
 ### Clone the Repository
 ```sh
-git clone https://github.com/your-username/chatify.git
+git clone https://github.com/nishansingh13/MERN-Chat-App
 cd chatify
 ```
 
