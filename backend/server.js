@@ -26,6 +26,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
+app.get("/api/ping", (req, res) => {
+    res.send("Pong");
+});
 app.use(bodyParser.json());
 app.use("/api/user", userRoutes);
 app.use("/send-otp", sendotp);
@@ -118,7 +121,7 @@ io.on("connection", (socket) => {
           console.error("Error updating message read status:", err);
         }
       });
-
+  
   // Handle room join
   socket.on("join room", ({ email, room }) => {
     // console.log("User joined with ",email,room);
