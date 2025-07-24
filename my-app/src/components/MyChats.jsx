@@ -1,33 +1,25 @@
 import { ChatState } from "@/Context/ChatProvider";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import Groupchat from "./supports/Groupchat"; // Import Groupchat component
-import { File, FileVideo2, Image, MessageCircle, MessageSquareMore, MessageSquareText, Moon, Sun } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import Groupchat from "./supports/Groupchat";
+import { File, FileVideo2, Image, MessageCircle, MessageSquareText, Moon, Sun } from "lucide-react";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 import { MoreVertical } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 import { useMediaQuery } from "react-responsive";
 import group from "../assets/group.jpg";
-
 import { LogOut } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
-import { io } from "socket.io-client";
+import { Avatar } from "./ui/avatar";
 
-function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofile, setshowprofile }) {
+function MyChats({ open, setOpen, showchat, setshowchat, showprofile, setshowprofile }) {
   const [chatloading, setchatloading] = useState(false);
   const navigate = useNavigate();
-  const [latestmessage, setlatestmessage] = useState("");
-  const logout = () => {
-
-    navigate("/");
-    localStorage.removeItem("userInfo");
-
-  }
+  
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
-  const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
 
   const {
     selectedChat,
@@ -36,18 +28,20 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
     setUser,
     chats,
     setChats,
-    messages,
-    setnewestmessage,
     newestmessage,
     darkTheme,
     setDarkTheme
   } = ChatState();
-  const [mdata, setm] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
-  const [isGroupChatOpen, setIsGroupChatOpen] = useState(false);  // State for opening group chat dialog
-  const [sidebar, setsidebar] = useState(true);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isGroupChatOpen, setIsGroupChatOpen] = useState(false);
 
-  const fetchchats = async () => {
+  const logout = () => {
+    navigate("/");
+    localStorage.removeItem("userInfo");
+  };
+
+  const fetchchats = useCallback(async () => {
     if (!user || !user.token) {
       console.log("No user token found. Skipping API call.");
       return;
@@ -61,32 +55,30 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
         },
       };
       const { data } = await axios.get("https://mern-chat-app-fk6w.onrender.com/api/chat", config);
-      setm(data);
       setChats(data);
     } catch (err) {
       console.log("Error fetching chats:", err);
-    }
-    finally {
+    } finally {
       setchatloading(false);
     }
-  };
+  }, [user, setChats]);
 
   useEffect(() => {
     // Load user data from localStorage
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     if (userInfo) {
-      setUser(userInfo); // Update context state
+      setUser(userInfo);
     }
-  }, []); // Run only once when the component mounts
+  }, [setUser]);
 
   useEffect(() => {
     if (user && user.token) {
       fetchchats();
     }
-  }, [user]); // Fetch chats when the user state changes
+  }, [user, fetchchats]);
 
   const filteredChats = chats.filter((chat) => {
-    if (!user || !user._id) return false; // Skip if user is not loaded
+    if (!user || !user._id) return false;
 
     if (chat.isGroupChat) {
       return chat.chatName?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -100,146 +92,202 @@ function MyChats({ open, setOpen, showchat, showsection, setshowchat, showprofil
       return userName.toLowerCase().includes(searchQuery.toLowerCase());
     }
   });
-  const getLatestMessage = (chatId) => {
-    return newestmessage[chatId] || selectedChat?.latestMessage?.content;
-  };
-  const handleDark = ()=>{
+
+  const handleDark = () => {
     setDarkTheme(!darkTheme);
     localStorage.setItem("theme", JSON.stringify(!darkTheme));
-   
-    
-  }
-  const returnproper = (query)=>{
-    if(query.content.includes("dqsx8yzbs/image/upload")){
-          
-          return <span className="flex"><Image className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>Image</span></span>
+  };
+
+  const returnproper = (query) => {
+    if (query.content.includes("dqsx8yzbs/image/upload")) {
+      return <span className="flex"><Image className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>Image</span></span>
     }
-    else if(query.content.includes("dqsx8yzbs/video/upload")){
-          
-      return <span className="flex"><FileVideo2 className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>Video</span></span>
-}
-else if(query.content.includes("dqsx8yzbs/raw/upload")){
-          
-  return <span className="flex"><File className={`${darkTheme?"text-white":"text-black"} p-1`}/> <span>File</span></span>
-}
+    else if (query.content.includes("dqsx8yzbs/video/upload")) {
+      return <span className="flex"><FileVideo2 className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>Video</span></span>
+    }
+    else if (query.content.includes("dqsx8yzbs/raw/upload")) {
+      return <span className="flex"><File className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>File</span></span>
+    }
     return query.content;
-  }
-
-  useEffect(() => {
-
-  }, [newestmessage]);
+  };
 
   return (
     <>
-
-
-      <div className={`${darkTheme?"bg-[#2a2929]":"bg-[#F5F6FA]"}  text-black fixed  ${isMobile ? "ml-0 w-full" : ""} w-[25rem] ml-0 h-lvh `}>
-
-        <div>
-          <div className="flex justify-between mx-6 my-3">
-            <div className={`text-[1.8rem] ${darkTheme?"text-orange-500":"text-green-600"} flex font-semibold gap-2`}>
-              <div><MessageSquareText className="relative top-3" /></div>
-              <div>Chatify</div>
+      <div className={`${
+        darkTheme 
+          ? "bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900" 
+          : "bg-gradient-to-b from-white via-gray-50 to-gray-100"
+      } ${
+        isMobile ? "fixed inset-0 z-30" : "fixed left-0 top-0 bottom-0 w-96"
+      } border-r ${
+        darkTheme ? "border-gray-700" : "border-gray-200"
+      } shadow-2xl backdrop-blur-sm flex flex-col`}>
+        
+        {/* Header Section */}
+        <div className={`flex-shrink-0 ${
+          darkTheme 
+            ? "bg-gradient-to-r from-orange-600 to-amber-600" 
+            : "bg-gradient-to-r from-emerald-600 to-green-600"
+        } px-6 py-4 shadow-lg`}>
+          <div className="flex justify-between items-center">
+            {/* Logo and Title */}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
+                <MessageSquareText size={24} className="text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white tracking-wide">Chatify</h1>
             </div>
-            <DropdownMenu >
-              <DropdownMenuTrigger >
-                <MoreVertical className={`${darkTheme?"bg-orange-500":"bg-green-500"} rounded-sm p-1`} />
+            
+            {/* Menu Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="p-2 hover:bg-white/20 rounded-full transition-all duration-200">
+                <MoreVertical size={20} className="text-white" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className={`${darkTheme && "bg-[#1e1e1e] text-white"}`}>
-                <DropdownMenuLabel>CHATIFY</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={() => setshowprofile(!showprofile)} >My Profile</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpen(!open)} className="cursor-pointer">Search New Users</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsGroupChatOpen(true)} className="cursor-pointer">
-                  Create a group
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout} className="cursor-pointer">
-                  <div className="flex gap-1 cursor-pointer">
-                    <LogOut size={20} onClick={logout} />
-                    <div>Logout</div>
+              <DropdownMenuContent className={`${
+                darkTheme ? "bg-gray-800 text-white border-gray-700" : "bg-white border-gray-200"
+              } shadow-xl rounded-xl p-2 w-56`}>
+                <DropdownMenuLabel className={`${
+                  darkTheme ? "text-orange-400" : "text-emerald-600"
+                } font-semibold text-center pb-2`}>
+                  CHATIFY
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className={darkTheme ? "bg-gray-700" : "bg-gray-200"} />
+                
+                <DropdownMenuItem 
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    darkTheme ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                  } transition-colors duration-200`}
+                  onClick={() => setshowprofile(!showprofile)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">MP</span>
+                    </div>
+                    <span>My Profile</span>
                   </div>
-
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDark} className="cursor-pointer">
-                  <div className="flex gap-1 cursor-pointer">
-                    {darkTheme?(<Moon size={20}/>):(
-                    <Sun  size={20}/>)}
-                   
-                    <div>{darkTheme?"Dark":"Light"} Theme</div>
+                
+                <DropdownMenuItem 
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    darkTheme ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                  } transition-colors duration-200`}
+                  onClick={() => setOpen(!open)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                      <Search size={16} className="text-white" />
+                    </div>
+                    <span>Search New Users</span>
                   </div>
-
                 </DropdownMenuItem>
-
+                
+                <DropdownMenuItem 
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    darkTheme ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                  } transition-colors duration-200`}
+                  onClick={() => setIsGroupChatOpen(true)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <MessageCircle size={16} className="text-white" />
+                    </div>
+                    <span>Create a Group</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    darkTheme ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                  } transition-colors duration-200`}
+                  onClick={handleDark}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 ${
+                      darkTheme ? "bg-gradient-to-r from-yellow-500 to-orange-500" : "bg-gradient-to-r from-gray-600 to-gray-800"
+                    } rounded-full flex items-center justify-center`}>
+                      {darkTheme ? <Sun size={16} className="text-white" /> : <Moon size={16} className="text-white" />}
+                    </div>
+                    <span>{darkTheme ? "Light" : "Dark"} Theme</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator className={darkTheme ? "bg-gray-700" : "bg-gray-200"} />
+                
+                <DropdownMenuItem 
+                  className={`cursor-pointer rounded-lg px-3 py-2 ${
+                    darkTheme ? "hover:bg-red-900/50" : "hover:bg-red-50"
+                  } transition-colors duration-200`}
+                  onClick={logout}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                      <LogOut size={16} className="text-white" />
+                    </div>
+                    <span className="text-red-600">Logout</span>
+                  </div>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
 
 
-          {isGroupChatOpen && <Groupchat setIsOpen={setIsGroupChatOpen} />}  {/* Pass setIsOpen to Groupchat */}
+        {/* Group Chat Modal */}
+        {isGroupChatOpen && <Groupchat setIsOpen={setIsGroupChatOpen} />}
 
-          <div className="w-[80%] mx-auto my-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <Input
-                className={`${darkTheme?"border-orange-500 bg-[#353434] text-white":"bg-gray-50"} pl-10`}
-                placeholder="Search here"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        {/* Search Section */}
+        <div className="flex-shrink-0 px-6 py-4">
+          <div className="relative">
+            <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${
+              darkTheme ? "text-gray-400" : "text-gray-500"
+            }`}>
+              <Search size={20} />
             </div>
+            <Input
+              className={`${
+                darkTheme 
+                  ? "border-gray-600 bg-gray-800/50 text-white placeholder-gray-400 focus:border-orange-500 focus:ring-orange-500/20" 
+                  : "border-gray-300 bg-white/80 placeholder-gray-500 focus:border-emerald-500 focus:ring-emerald-500/20"
+              } pl-12 pr-4 py-3 rounded-xl transition-all duration-200 backdrop-blur-sm shadow-sm hover:shadow-md focus:shadow-lg`}
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
+        </div>
 
-          <div className={`${darkTheme?"bg-[#1e1e1e]":"bg-white"} py-2 px-2 m-[1rem]  rounded-2xl `}>
-            <ScrollArea className=" h-[calc(100lvh-10rem)] " >
-              {
-                chatloading ? (
-                  <div className="flex flex-col gap-4 ">
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
+        {/* Chat List Section */}
+        <div className="flex-1 px-4 pb-4 min-h-0">
+          <div className={`${
+            darkTheme 
+              ? "bg-gray-800/30 border-gray-700" 
+              : "bg-white/60 border-gray-200"
+          } rounded-2xl border backdrop-blur-sm shadow-lg h-full flex flex-col`}>
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-2">
+              {chatloading ? (
+                /* Loading Skeletons */
+                <div className="space-y-3 p-2">
+                  {[...Array(6)].map((_, index) => (
+                    <div key={index} className="flex items-center space-x-4 p-3">
+                      <Skeleton className={`h-12 w-12 rounded-full ${
+                        darkTheme ? "bg-gray-700" : "bg-gray-200"
+                      }`} />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className={`h-4 w-3/4 ${
+                          darkTheme ? "bg-gray-700" : "bg-gray-200"
+                        }`} />
+                        <Skeleton className={`h-3 w-1/2 ${
+                          darkTheme ? "bg-gray-700" : "bg-gray-200"
+                        }`} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 ">
-                      <Skeleton className={`h-12 w-12 rounded-full ${darkTheme && "bg-zinc-700"} `} />
-                      <div className="space-y-2  ">
-                        <Skeleton className={`h-4 w-[250px]  ${darkTheme && "bg-zinc-700"}`} />
-                        <Skeleton className={`h-4 w-[200px]  ${darkTheme && "bg-zinc-700"}`} />
-                      </div>
-                    </div>
-                  </div>
-
-                ) : (
-                  filteredChats.map((chat) => {
+                  ))}
+                </div>
+              ) : (
+                /* Chat Items */
+                <div className="space-y-1 p-2">
+                  {filteredChats.map((chat) => {
                     const validUsers = chat.users?.filter((u) => u && u._id);
 
                     if (!validUsers || validUsers.length < 2) {
@@ -247,79 +295,88 @@ else if(query.content.includes("dqsx8yzbs/raw/upload")){
                       return null;
                     }
 
-                    const otherUser =
-                      validUsers[0]._id === user._id ? validUsers[1] : validUsers[0];
-
-                    const latestmessage = chat.latestMessage?.content;
+                    const otherUser = validUsers[0]._id === user._id ? validUsers[1] : validUsers[0];
+                    const isSelected = selectedChat === chat;
 
                     return (
                       <div
                         key={chat._id}
-                        className={`cursor-pointer pl-2 rounded-xl ${selectedChat === chat
-                            ? `${darkTheme?"bg-orange-500 text-black":"bg-green-600 text-white"} `
-                            : `hover:transition-all hover:bg-gray-200 bg-gray-50 ${darkTheme?"bg-zinc-800 text-white hover:bg-zinc-700":""}`
-                          }`}
-
+                        className={`
+                          cursor-pointer rounded-xl p-3 transition-all duration-200 hover:scale-[1.02] 
+                          ${isSelected
+                            ? `${
+                                darkTheme 
+                                  ? "bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg" 
+                                  : "bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg"
+                              }`
+                            : `${
+                                darkTheme 
+                                  ? "hover:bg-gray-700/50 text-gray-200" 
+                                  : "hover:bg-gray-100/80 text-gray-800"
+                              }`
+                          }
+                        `}
                         onClick={() => {
                           setSelectedChat(chat);
-                          isMobile ? setshowchat(!showchat) : "";
+                          if (isMobile) setshowchat(!showchat);
                         }}
                       >
-                        <div className="pl-[1rem] text-[0.9rem] ">
-                          {chat.isGroupChat ? (
-                            <div className="flex gap-2 my-2 py-2">
+                        <div className="flex items-center gap-3">
+                          {/* Avatar */}
+                          <div className="relative">
+                            {chat.isGroupChat ? (
                               <img
                                 src={group}
-                                alt="User"
-                                className="w-[2.5rem] h-[2.5rem] rounded-full"
+                                alt="Group Avatar"
+                                className="w-12 h-12 rounded-full object-cover border-2 border-white/20 shadow-md"
                               />
-                              <div>
-                                <div>{chat.chatName}</div>
-                                <div className={`text-gray-500`}>
-                                  {
-                                    newestmessage[chat?._id] !== undefined
-                                      ? newestmessage[chat._id]
-                                      : (chat.latestMessage ? chat.latestMessage.content : "")
-                                  }
-                                </div>
-                              </div>
+                            ) : (
+                              <Avatar
+                                src={otherUser?.pic}
+                                name={otherUser?.name}
+                                alt="Avatar"
+                                className="w-12 h-12 rounded-full object-cover border-2 border-white/20 shadow-md"
+                              />
+                            )}
+                          </div>
 
+                          {/* Chat Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-semibold text-sm truncate">
+                                {chat.isGroupChat ? chat.chatName : (otherUser?.name || "Unknown User")}
+                              </h3>
                             </div>
-                          ) : (
-                            <div>
-                              <div className={`flex gap-2 my-2 py-2`}>
-                                <img
-                                  src={otherUser?.pic || ""}
-                                  alt="User"
-                                  className="w-[2.5rem] h-[2.5rem] rounded-full"
-                                />
-                                <div>
-                                  <div>{otherUser?.name || "Unknown User"}</div>
-                                  <div className={`text-gray-500`}>
-                                    {
-                                      newestmessage[chat?._id] !== undefined
-                                        ? newestmessage[chat._id]
-                                        : (chat.latestMessage ?returnproper(chat.latestMessage) : "")
-                                    }
-                                  </div>
-
-                                </div>
-                              </div>
-
+                            
+                            {/* Latest Message */}
+                            <div className={`text-xs truncate ${
+                              isSelected 
+                                ? "text-white/80" 
+                                : darkTheme 
+                                  ? "text-gray-400" 
+                                  : "text-gray-500"
+                            }`}>
+                              {newestmessage[chat?._id] !== undefined
+                                ? newestmessage[chat._id]
+                                : chat.latestMessage
+                                  ? (chat.isGroupChat 
+                                      ? chat.latestMessage.content 
+                                      : returnproper(chat.latestMessage))
+                                  : "No messages yet"
+                              }
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
-
                     );
-                  })
-                )
-              }
+                  })}
+                </div>
+              )}
+              </div>
             </ScrollArea>
           </div>
         </div>
       </div>
-
     </>
   );
 }

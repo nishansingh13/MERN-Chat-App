@@ -1,34 +1,21 @@
-import { X, LucideEdit2, Edit2, Check, Loader2 } from "lucide-react";
+import { X, Edit2, Check, Loader2, User, Mail, Camera } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import { SkeletonDemo } from "./Skeleton";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { ChatState } from "@/Context/ChatProvider";
-import { useMediaQuery } from "react-responsive";
-import { Label } from "../ui/label";
+import { Avatar } from "../ui/avatar";
+import { Button } from "../ui/button";
 
 function ProfileSection({ showprofile, setshowprofile }) {
-  const { user, setUser,darkTheme } = ChatState();
+  const { user, setUser, darkTheme } = ChatState();
   const [updatedname, setupdatedname] = useState("");
   const [profilepic, setprofilepic] = useState("");
   const { toast } = useToast();
-  const [loading, setloading] = useState(false);
   const [nameupdating, setnameupdating] = useState("");
   const [email, setemail] = useState("");
   const [name, setname] = useState("");
   const [profileloading, setprofileloading] = useState("");
-
-  
 
   useEffect(() => {
     if (user) {
@@ -99,8 +86,6 @@ function ProfileSection({ showprofile, setshowprofile }) {
     }
   };
 
-  const isMobile = useMediaQuery({ query: "(max-width:768px)" });
-
   // Change name logic
   const changename = async () => {
     if (updatedname !== "" && user._id) {
@@ -128,94 +113,225 @@ function ProfileSection({ showprofile, setshowprofile }) {
   };
 
   return (
-    <SidebarProvider className={`overflow-hidden ${!showprofile && "hidden"}`}>
-      <Sidebar
-        open={showprofile}
-        onClose={() => setshowprofile(!showprofile)}
-        className={`transition-all w-[25rem] ${showprofile ? "translate-x-0" : "-translate-x-full"} `}
-      >
-        <SidebarContent className={`h-full overflow-hidden ${darkTheme?"bg-[#1e1e1e] text-white":""}`}>
-          <SidebarGroup>
-            <button
-              onClick={() => setshowprofile(!showprofile)}
-              className="relative left-[14rem]"
-            >
-              <X className="border border-black rounded-full relative left-[8.6rem] text-white bg-black bottom-1 my-2" />
-            </button>
-            <SidebarMenuItem className="list-none text-[1.6rem] font-semibold">Profile</SidebarMenuItem>
+    <div className={`${!showprofile && "hidden"} fixed inset-0 z-50`}>
+      {/* Mobile Overlay */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={() => setshowprofile(false)}
+      />
+      
+      {/* Profile Panel */}
+      <div className={`${
+        showprofile ? 'translate-x-0' : '-translate-x-full'
+      } fixed left-0 top-0 bottom-0 w-96 ${
+        darkTheme 
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+          : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
+      } shadow-2xl transition-transform duration-300 ease-in-out flex flex-col overflow-hidden`}>
+        
+        {/* Header */}
+        <div className={`${
+          darkTheme 
+            ? "bg-gray-800/90 border-gray-700" 
+            : "bg-white/90 border-gray-200"
+        } backdrop-blur-sm border-b px-6 py-4 flex items-center justify-between`}>
+          <h2 className={`text-xl font-bold ${
+            darkTheme ? "text-white" : "text-gray-900"
+          }`}>
+            Profile Settings
+          </h2>
+          <button
+            onClick={() => setshowprofile(false)}
+            className={`p-2 rounded-full ${
+              darkTheme 
+                ? "hover:bg-gray-700 text-gray-300" 
+                : "hover:bg-gray-100 text-gray-600"
+            } transition-colors duration-200`}
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-            {!loading ? (
-              <SidebarGroupContent className="h-[calc(100vh-4rem)] overflow-y-auto">
-                <SidebarMenu>
-                  {!profileloading?(
-                  <SidebarMenuItem className="w-full">
-                    <div className="flex justify-center flex-col items-center ">
-                    <label htmlFor="file-input" className="relative cursor-pointer">
-                      <img
-                        src={profilepic || 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg'}
-                        alt="Profile Picture"
-                        className="rounded-full mx-auto w-[8rem] h-[8rem]"
-                      />
-                      </label>
-                       <input
-                              id="file-input"
-                              type="file"
-                              className="hidden"
-                              onChange={handleImageChange} // Trigger file selection when image is clicked
-                            />
-                      <div>
-                        
-                      </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          
+          {/* Profile Picture Section */}
+          <div className="text-center space-y-4">
+            <div className="relative inline-block">
+              {!profileloading ? (
+                <div className="relative group">
+                  <Avatar
+                    src={profilepic}
+                    name={name}
+                    alt="Profile Picture"
+                    className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-2xl group-hover:scale-105 transition-transform duration-200"
+                    size={150}
+                  />
+                  <label 
+                    htmlFor="file-input" 
+                    className={`absolute inset-0 rounded-full cursor-pointer flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                      darkTheme ? "bg-black/50" : "bg-white/50"
+                    } backdrop-blur-sm`}
+                  >
+                    <div className={`p-3 rounded-full ${
+                      darkTheme 
+                        ? "bg-orange-600 hover:bg-orange-700" 
+                        : "bg-emerald-600 hover:bg-emerald-700"
+                    } text-white shadow-lg`}>
+                      <Camera size={24} />
                     </div>
-                  </SidebarMenuItem>):(
-                    <div className="mx-auto">
-                    <Loader2 className="animate-spin text-green-600" size={30}/>
-                    </div>
-                    )}
-                  <SidebarMenu className={`${darkTheme?"text-orange-500":"text-green-600"} text-[1.1rem] relative left-5 top-8`}>
-                    <div className={`my-2 `}>Your name</div>
-                    <div className="flex justify-between">
-                      {!nameupdating && <div className={`text-[80%] ${darkTheme?"text-white":"text-black"}`}>{name}</div>}
-                      {nameupdating && (
-                        <Input
-                          className={`${darkTheme?"text-white":"text-black"} outline-none border-gray-700 w-[70%] mx-auto `}
-                          placeholder="Edit your name here.."
-                          onChange={(e) => setupdatedname(e.target.value)}
-                        />
-                      )}
-                      <div className="relative right-5 text-black">
-                        {!nameupdating ? (
-                          <Edit2 className={`p-1 bottom-1 relative cursor-pointer ${darkTheme?"text-white":""}`} onClick={() => setnameupdating(!nameupdating)} />
-                        ) : (
-                          <Check
-                            className={`p-1 bottom-0 relative right-1 cursor-pointer ${darkTheme?"text-white":""}`}
-                            size={30}
-                            onClick={() => {
-                              setnameupdating(!nameupdating);
-                              changename();
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </SidebarMenu>
-                  <SidebarMenu className={`${darkTheme?"text-orange-500":""} text-[1.1rem] relative left-5 top-8`}>
-                    <div className="my-2">Your email</div>
-                    <div className="flex justify-between">
-                      <div className={`text-[80%] ${darkTheme?"text-white":"text-black"}`}>{email}</div>
-                    </div>
-                  </SidebarMenu>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            ) : (
-              <div>
-                <SkeletonDemo />
+                  </label>
+                  <input
+                    id="file-input"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </div>
+              ) : (
+                <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center ${
+                  darkTheme ? "bg-gray-700" : "bg-gray-200"
+                } border-4 border-white shadow-2xl`}>
+                  <Loader2 className={`animate-spin ${
+                    darkTheme ? "text-orange-500" : "text-emerald-600"
+                  }`} size={40} />
+                </div>
+              )}
+            </div>
+            <p className={`text-sm ${
+              darkTheme ? "text-gray-400" : "text-gray-600"
+            }`}>
+              Click on your avatar to change your profile picture
+            </p>
+          </div>
+
+          {/* Name Section */}
+          <div className={`${
+            darkTheme 
+              ? "bg-gray-800/50 border border-gray-700" 
+              : "bg-white/80 border border-gray-200"
+          } backdrop-blur-sm rounded-2xl p-6 space-y-4 shadow-lg`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${
+                darkTheme 
+                  ? "bg-orange-600/20 text-orange-400" 
+                  : "bg-emerald-600/20 text-emerald-600"
+              }`}>
+                <User size={20} />
               </div>
-            )}
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    </SidebarProvider>
+              <h3 className={`text-lg font-semibold ${
+                darkTheme ? "text-white" : "text-gray-900"
+              }`}>
+                Display Name
+              </h3>
+            </div>
+            
+            <div className="space-y-3">
+              {!nameupdating ? (
+                <div className="flex items-center justify-between">
+                  <p className={`text-lg ${
+                    darkTheme ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    {name}
+                  </p>
+                  <Button
+                    onClick={() => setnameupdating(true)}
+                    variant="ghost"
+                    size="sm"
+                    className={`${
+                      darkTheme 
+                        ? "hover:bg-gray-700 text-gray-300" 
+                        : "hover:bg-gray-100 text-gray-600"
+                    } transition-colors duration-200`}
+                  >
+                    <Edit2 size={16} />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Input
+                    className={`flex-1 ${
+                      darkTheme 
+                        ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-orange-500/20" 
+                        : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-emerald-500/20"
+                    } rounded-xl focus:ring-2 transition-all duration-200`}
+                    placeholder="Enter your new name"
+                    value={updatedname}
+                    onChange={(e) => setupdatedname(e.target.value)}
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setnameupdating(false);
+                        changename();
+                      }}
+                      size="sm"
+                      className={`${
+                        darkTheme 
+                          ? "bg-orange-600 hover:bg-orange-700" 
+                          : "bg-emerald-600 hover:bg-emerald-700"
+                      } text-white`}
+                    >
+                      <Check size={16} />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setnameupdating(false);
+                        setupdatedname("");
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className={`${
+                        darkTheme 
+                          ? "hover:bg-gray-700 text-gray-300" 
+                          : "hover:bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Email Section */}
+          <div className={`${
+            darkTheme 
+              ? "bg-gray-800/50 border border-gray-700" 
+              : "bg-white/80 border border-gray-200"
+          } backdrop-blur-sm rounded-2xl p-6 space-y-4 shadow-lg`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${
+                darkTheme 
+                  ? "bg-orange-600/20 text-orange-400" 
+                  : "bg-emerald-600/20 text-emerald-600"
+              }`}>
+                <Mail size={20} />
+              </div>
+              <h3 className={`text-lg font-semibold ${
+                darkTheme ? "text-white" : "text-gray-900"
+              }`}>
+                Email Address
+              </h3>
+            </div>
+            
+            <p className={`text-lg ${
+              darkTheme ? "text-gray-300" : "text-gray-700"
+            }`}>
+              {email}
+            </p>
+            <p className={`text-sm ${
+              darkTheme ? "text-gray-500" : "text-gray-500"
+            }`}>
+              Email cannot be changed
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

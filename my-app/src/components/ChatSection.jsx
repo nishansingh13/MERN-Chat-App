@@ -1,28 +1,24 @@
-import React, { useEffect, useState, useRef, useContext, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Input } from "./ui/input";
 import axios from "axios";
 import { Scrollbars } from "react-custom-scrollbars-2";
-import { io } from "socket.io-client";
-import { Separator  } from "./ui/separator";
 import { ChatState } from "@/Context/ChatProvider";
 import EmojiPicker from "emoji-picker-react";
 import { Smile ,ArrowLeftIcon, Loader2, MessageSquareText, Plus, CheckCheck, PhoneCall, ArrowDown} from "lucide-react";
 import Lottie from "lottie-react";
 import typinganimation from "../assets/typing_animation.json";
-import { Settings } from "lucide-react";
 import { SendHorizonal } from "lucide-react";
 import { useMediaQuery } from "react-responsive";
 import group from "../assets/group.jpg";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
-import { Button } from "./ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "@/Context/SocketProvider";
+import { Avatar } from "./ui/avatar";
 
-var selectedChatcompare;
-function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
-  const endpoint = "https://mern-chat-app-fk6w.onrender.com/";
+let selectedChatcompare;
+function ChatSection({ showchat, setshowchat }) {
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [calling,setCalling]=useState(false);
@@ -36,10 +32,8 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const typingTimeoutRef = useRef(null);
-  const isDesktop = useMediaQuery({ query: '(min-width: 768px)' });
   const isMobile = useMediaQuery({query:"(max-width:768px)"}); 
-  const [clicked,SetClicked]=useState(false); 
-  const {messages,setMessages,darkTheme,setDarkTheme} = ChatState();
+  const {messages,setMessages,darkTheme} = ChatState();
   const navigate = useNavigate();
   const updateNewestMessage = (chatId, message) => {
     setnewestmessage((prevState) => ({
@@ -49,7 +43,7 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   };
   
   
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!selectedChat) return;
     setLoading(true);
     try {
@@ -69,17 +63,18 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
         socketRef.current.emit("join chat", selectedChat._id);
       }
       setLoading(false);
-    } catch (err) {
-      console.error("Error fetching messages:", err);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      setLoading(false);
     }
-  };
+  }, [selectedChat, user, socketRef, setMessages]);
   
   useEffect(() => {
     if (selectedChat && user) {
       fetchMessages();
       selectedChatcompare = selectedChat;
     }
-  }, [selectedChat, user]);
+  }, [selectedChat, user, fetchMessages]);
 
   const getChatName = () => {
     if (selectedChat.isGroupChat) {
@@ -152,8 +147,9 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
           socketRef.current.emit("new message", data);
           updateNewestMessage(data.chat._id, data.content);
         }
-      } catch (err) {
+      } catch (error) {
         alert("Error sending message");
+        console.error(error);
       }
     }
   };
@@ -194,15 +190,13 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
    
     socketRef.current.emit("call rejected",(user._id));
   }
-  const handleUserJoined =useCallback(({email,id,room})=>{
+  const handleUserJoined = useCallback(({id, room}) => {
     console.log(id);
-    const userdata= (JSON.parse(localStorage.getItem("userInfo")))
+    const userdata = (JSON.parse(localStorage.getItem("userInfo")))
     if (room.users.some(user => user._id === userdata._id)) {
-     setOpen(true);
-   
-      // alert(`Incoming call from ${email}`);
+      setOpen(true);
     } 
-  },[socketRef])
+  }, []);
   const handleRejection = ()=>{
     toast({
       variant:"destructive",
@@ -228,36 +222,29 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   }, [navigate]);
   
   useEffect(() => {
-  
-    // socketRef.current = io(endpoint);
-   
     if (user && socketRef.current) {
-      // socketRef.current = io(endpoint);
-      socketRef.current.emit("setup", user);
-      socketRef.current.on("connected", () => setSocketConnected(true));
-      socketRef.current.on("typing", () => setIsTyping(true));
-      socketRef.current.on("user joined",handleUserJoined);
-      socketRef.current.on("stop typing", () => setIsTyping(false));
-      socketRef.current.on("call rejected by receiver",handleRejection);
-      socketRef.current.on("call accepted by receiver",handleAcceptSender);
+      const socket = socketRef.current;
+      socket.emit("setup", user);
+      socket.on("connected", () => setSocketConnected(true));
+      socket.on("typing", () => setIsTyping(true));
+      socket.on("user joined", handleUserJoined);
+      socket.on("stop typing", () => setIsTyping(false));
+      socket.on("call rejected by receiver", handleRejection);
+      socket.on("call accepted by receiver", handleAcceptSender);
 
+      return () => {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        socket.off("connected");
+        socket.off("typing");
+        socket.off("stop typing");
+        socket.off("user joined", handleUserJoined);
+        socket.off("call rejected by receiver", handleRejection);
+        socket.off("call accepted by receiver", handleAcceptSender);
+      };
     }
-
-    return () => {
-    
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      if (socketRef.current) {
-          socketRef.current.off("connected", () => setSocketConnected(true));
-          socketRef.current.off("typing", () => setIsTyping(true));
-          socketRef.current.off("stop typing", () => setIsTyping(false));
-          socketRef.current.off("user joined",handleUserJoined);
-          socketRef.current.off("call rejected by receiver",handleRejection);
-          socketRef.current.off("call accepted by receiver",handleAcceptSender);
-      }
-    };
-  }, [user]);
+  }, [user, socketRef, handleUserJoined, handleAcceptSender]);
   
   const handleSubmit = ()=>{
     // console.log(user.email,selectedChat);
@@ -267,12 +254,12 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
   }
   useEffect(() => {
     if (socketRef.current) {
-     
-      socketRef.current.on("message received", (newMessage) => {
+      const socket = socketRef.current;
+      
+      socket.on("message received", (newMessage) => {
         if (selectedChat && selectedChat._id === newMessage.chat._id) {
           setMessages((prevMessages) => [...prevMessages, newMessage]);  
-          
-          socketRef.current.emit("message is read",({messageId : newMessage , chatId : selectedChat._id}));
+          socket.emit("message is read", {messageId: newMessage, chatId: selectedChat._id});
         } else {
           const senderName = newMessage.sender?.name;
           if (senderName && !notification.includes(senderName)) {
@@ -280,29 +267,23 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
           }
         }
       });
-      socketRef.current.on("message read", (updatedMessage) => {
-       
+      
+      socket.on("message read", (updatedMessage) => {
         setMessages((prevMessages) => {
           return prevMessages.map((message) =>
             message._id === updatedMessage._id
-              ? { ...message, read: true }  // Mark the message as read
+              ? { ...message, read: true }
               : message
           );
         });
       });
-      
-    
-      
-     
-    }
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off("message received");
-        
-      }
-    };
-  }, [selectedChat, notification, setNotification,messages]);
+      return () => {
+        socket.off("message received");
+        socket.off("message read");
+      };
+    }
+  }, [selectedChat, notification, setNotification, setMessages, socketRef]);
   // In your socket event listener, update the message state to mark as "seen"
 
 
@@ -329,245 +310,445 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
 
  
   return (
-    
+    <div className={`${
+      isMobile ? 'fixed inset-0 z-40' : 'fixed left-96 right-0 top-0 bottom-0'
+    } ${
+      darkTheme 
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+        : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
+    } flex flex-col overflow-hidden`}>
 
-    <div
-      className={` top-[0rem] h-[100%] md:ml-[25rem] ${darkTheme?"bg-[#1e1e1e]":"bg-[#F5F6FA]"} overflow-hidden`}
-      
-    >
-         {open && (
-          
+      {/* Incoming Call Alert */}
+      {open && (
         <AlertDialog open={open || calling} onOpenChange={setOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent className={`${
+            darkTheme ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+          } rounded-2xl shadow-2xl`}>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Call from <span className="text-black">{user.name} ({user.email})</span>
+              <AlertDialogTitle className={`${
+                darkTheme ? "text-white" : "text-gray-900"
+              } text-xl font-bold`}>
+                Incoming Call
+              </AlertDialogTitle>
+              <AlertDialogDescription className={`${
+                darkTheme ? "text-gray-300" : "text-gray-600"
+              }`}>
+                Call from <span className={`font-semibold ${
+                  darkTheme ? "text-orange-400" : "text-emerald-600"
+                }`}>{user.name} ({user.email})</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {setOpen(false);handleDecline()}}>Decline</AlertDialogCancel>
-              <AlertDialogAction onClick={() => {handleAcceptance()}}>Answer</AlertDialogAction>
+            <AlertDialogFooter className="gap-3">
+              <AlertDialogCancel 
+                onClick={() => {setOpen(false); handleDecline()}}
+                className="bg-red-500 hover:bg-red-600 text-white border-none"
+              >
+                Decline
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {handleAcceptance()}}
+                className={`${
+                  darkTheme 
+                    ? "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700" 
+                    : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+                } text-white border-none`}
+              >
+                Answer
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       )}
-         
-   
 
-    {
-  !selectedChat ? (
-    <div className={`text-white ${darkTheme?"bg-[#1e1e1e]":"bg-white"} h-lvh  flex flex-col items-center justify-center text-[2rem] overflow-hidden`}>
-      
-      <div className={`flex gap-2 font-semibold ${darkTheme?"text-orange-500":"text-green-600"} `}>
-        <div className="relative top-3"><MessageSquareText size={30}/></div>
-        <div className="">Chatify {!isMobile?"Web":""}</div>
-      </div>
-
-      <div className={`text-[60%] ${darkTheme?"text-orange-500":"text-green-600"} `}>Responsive Chatting Web App</div>
-     
-
-
-    </div>
-  ) : (
-    loading ? (
-      
-      <div className="flex justify-center items-center h-full">
-        <div><Loader2 className={`animate-spin ${darkTheme?"text-orange-500":"text-green-600"}`} size={80}/></div>
-      </div>
-    ) : (
-      // The rest of your chat content here
-      <div className={`overflow-hidden`}>
-        <div className={`${isDesktop ? "pt-[1.5rem] pb-4 px-3 mt-2 mx-2 rounded-xl bg-gray-200" : "pt-3 px-3 mr-1"} ${darkTheme?"bg-zinc-800 text-white":""}`}>
-          <div className="relative flex items-center justify-between ">
-            <div className="flex">
-              {isMobile && (
-                <ArrowLeftIcon
-                  className="relative top-3"
-                  onClick={() => setshowchat(!showchat)}
-                />
-              )}
-              <Dialog >
-              <DialogTrigger>
-                
-              <img
-                src={`${!selectedChat.isGroupChat ? getChatName().pic : group}`}
-                className="w-[3.5rem] h-[3.5rem] rounded-full p-1"
-              />
-              </DialogTrigger>
-              <DialogContent className="bg-gray-300">
-    <DialogHeader>
-      <DialogTitle>User Info</DialogTitle>
-      <DialogDescription>
-       <img   src={`${!selectedChat.isGroupChat ? getChatName().pic : group}`} className={`p-[4rem] ${!isMobile?"w-[30rem] h-[30rem]":"w-[20rem] h-[20rem]"} rounded-full`} />
-      </DialogDescription>
-      <div className="mx-auto relative bottom-[3rem] "><span className="font-semibold ">Email: </span>{getChatName()?.email}</div>
-    </DialogHeader>
-  </DialogContent>
-  </Dialog>
-              
-              <div className="text-[1.5rem] px-2 relative top-1">
-                {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
+      {!selectedChat ? (
+        /* Welcome Screen */
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="text-center space-y-6">
+            <div className={`inline-flex items-center gap-4 p-6 rounded-2xl ${
+              darkTheme 
+                ? "bg-gray-800/50 border border-gray-700" 
+                : "bg-white/80 border border-gray-200"
+            } backdrop-blur-sm shadow-2xl`}>
+              <div className={`p-4 rounded-full ${
+                darkTheme 
+                  ? "bg-gradient-to-r from-orange-600 to-amber-600" 
+                  : "bg-gradient-to-r from-emerald-600 to-green-600"
+              }`}>
+                <MessageSquareText size={40} className="text-white" />
+              </div>
+              <div>
+                <h1 className={`text-4xl font-bold ${
+                  darkTheme ? "text-white" : "text-gray-800"
+                }`}>
+                  Chatify {!isMobile ? "Web" : ""}
+                </h1>
+                <p className={`text-lg ${
+                  darkTheme ? "text-orange-400" : "text-emerald-600"
+                } font-medium`}>
+                  Responsive Chatting Web App
+                </p>
               </div>
             </div>
             
-            <div>
-            <PhoneCall 
-  className={`cursor-pointer ${darkTheme?"text-orange-500":"text-green-600"}`}
-  onClick={() => {
-    handleSubmit();
-    setCalling(true);
-  }}
-/>
-            </div>
-            {calling && (
-  <div className="absolute w-full h-[37rem] top-1 z-20  flex items-center justify-center">
-    <div className="bg-white p-4 rounded-lg shadow-lg">
-      <div className="text-[1.5rem] text-black w-[24rem]">Calling User...</div>
-      <div className="mt-4 flex justify-end">
-        <button
-          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-          onClick={() => setCalling(false)} // Cancel the call
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-            
+            <p className={`text-lg ${
+              darkTheme ? "text-gray-400" : "text-gray-600"
+            } max-w-md mx-auto leading-relaxed`}>
+              Select a conversation from the sidebar to start chatting with your friends and family.
+            </p>
           </div>
         </div>
-
-        <Separator className={`${isMobile ? "relative top-4" : "relative top-2"}`} />
-
-        <div className={`w-full ${isMobile ? "mt-0 h-[540px]" : "mt-[2rem] h-[540px]"}`}>
-          <Scrollbars
-            autoHide
-            autoHideTimeout={1000}
-            autoHideDuration={200}
-            className="mt-[1rem]"
-            ref={scrollRef}
-          >
-          
-            <div className="p-4">
-
-              {messages.map((u,index) => (
-                <div key={u._id}> 
-                {/* {console.log( messages[index-1],"index",index)} */}
-              
-                <div
-                   
-                  className={`${
-                    u.sender._id === user._id
-                      ? "bg-green-100 p-1 my-2 ml-auto text-left"
-                      : "bg-blue-300 my-2 p-1 mr-auto text-left"
-                   
-                    
-                  }    ${clicked &&  "bg-black text-blue-600 "} w-fit ${isMobile?"max-w-[50%]":"max-w-[35%]"} break-words p-2 rounded-md
-                `}
-                  style={{
-                    borderRadius:
-                      u.sender._id === user._id
-                        ? "10px 10px 0 10px"
-                        : "10px 10px 10px 0",
-                  }}
-                  
-                >  {u.sender._id===user._id &&<ArrowDown className="p-1 ml-auto"  onClick={()=>deleteMessage(u._id)}/>  }
-                {u.chat.isGroupChat && u.sender._id!==user._id &&
-                  <div className="text-[60%] text-gray-500 mr-auto text-right">{u.sender.name}</div>}
-{u.content.includes("dqsx8yzbs/image/")  ? (
-          <Dialog >
-          <DialogTrigger>
-            
-          <img src={u.content} alt="Image message" className="w-full h-auto" />
-          </DialogTrigger>
-          <DialogContent className="bg-gray-300">
-<DialogHeader>
-
-  <DialogDescription>
-  <img src={u.content} alt="Image message" className="w-full h-auto" />
-  </DialogDescription>
-</DialogHeader>
-</DialogContent>
-</Dialog>
-       
-
-) : u.content.includes("dqsx8yzbs/video/") ? (
-  <video src={u.content} controls className="w-full h-[10rem]" />
-) : u.content.includes("dqsx8yzbs/raw/") && u.content.endsWith(".pdf") ? (
-  <a
-    href={u.content}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-500 underline"
-  >
-    Open PDF
-  </a>
-) : u.content.includes("dqsx8yzbs/raw/") ? (
-  <a
-    href={u.content}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-500 underline underline-offset-4"
-  >
-    { u.content.substring(u.content.lastIndexOf('/') + 1)}
-   
-  </a>
-) : (
-  u.content
-)}
-
-                  <span className="text-right text-[65%] relative top-2 text-gray-500 inline-flex">  {convertToIST(u.createdAt)} {user._id===u.sender._id && <CheckCheck className={`p-1 bottom-1 relative ${u.read?"text-blue-400":""}`}/>}</span>
-                
-     
-                </div>
-            
-{
-  u.chat.isGroupChat && (
-   
-    ((index === messages.length - 1 || messages[index + 1]?.sender._id !== u.sender._id) && u.sender._id!==user._id ) && (
-      
-      <div className={`
-        ${u.sender._id === user._id ? "ml-auto text-left" : "mr-auto text-left"}
-        w-fit max-w-[35%] break-words pb-2 px-1 rounded-md text-[80%]
-      `}>
-      <div 
-      
-      >
-         
-        <img src={u.sender.pic}  className="w-[1.6rem] h-[1.6rem] rounded-full"/>
-        
-      </div>
-      </div>
-    )
-  )
-}
-
-
-
-                </div>
-                
-               
-              ))}
-            </div>
-            <div className="w-[4rem] h-[2rem]">
-              {isTyping && (
-                <Lottie
-                  animationData={typinganimation}
-                  loop={true}
-                  autoplay={true}
-                  className={`w-[5rem] h-[4rem] relative ${isMobile ? "bottom-[2rem]" : "bottom-[2rem]"} left-1`}
-                />
-              )}
-            </div>
-          </Scrollbars>
+      ) : loading ? (
+        /* Loading State */
+        <div className="flex-1 flex justify-center items-center">
+          <div className="text-center space-y-4">
+            <Loader2 className={`animate-spin ${
+              darkTheme ? "text-orange-500" : "text-emerald-600"
+            } mx-auto`} size={60} />
+            <p className={`text-lg font-medium ${
+              darkTheme ? "text-gray-400" : "text-gray-600"
+            }`}>
+              Loading messages...
+            </p>
+          </div>
         </div>
+      ) : (
+        /* Chat Interface */
+        <div className="flex-1 flex flex-col">
+          {/* Chat Header */}
+          <div className={`${
+            darkTheme 
+              ? "bg-gray-800/90 border-gray-700" 
+              : "bg-white/90 border-gray-200"
+          } backdrop-blur-sm border-b shadow-lg px-4 sm:px-6 py-4 flex items-center justify-between`}>
+            
+            <div className="flex items-center gap-4">
+              {/* Back Button for Mobile */}
+              {isMobile && (
+                <button
+                  onClick={() => setshowchat(!showchat)}
+                  className={`p-2 rounded-full ${
+                    darkTheme 
+                      ? "hover:bg-gray-700 text-gray-300" 
+                      : "hover:bg-gray-100 text-gray-600"
+                  } transition-colors duration-200`}
+                >
+                  <ArrowLeftIcon size={20} />
+                </button>
+              )}
+
+              <Dialog>
+                <DialogTrigger>
+                  <div className="relative group cursor-pointer">
+                    {!selectedChat.isGroupChat ? (
+                      <Avatar
+                        src={getChatName().pic}
+                        name={getChatName().name}
+                        alt="Profile"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
+                      />
+                    ) : (
+                      <img
+                        src={group}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white/20 shadow-md group-hover:scale-105 transition-transform duration-200"
+                        alt="Group"
+                      />
+                    )}
+                  </div>
+                </DialogTrigger>
+                <DialogContent className={`${
+                  darkTheme ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                } rounded-2xl shadow-2xl`}>
+                  <DialogHeader>
+                    <DialogTitle className={`${
+                      darkTheme ? "text-white" : "text-gray-900"
+                    } text-xl font-bold text-center`}>
+                      User Profile
+                    </DialogTitle>
+                    <DialogDescription className="text-center space-y-4">
+                      {!selectedChat.isGroupChat ? (
+                        <Avatar
+                          src={getChatName().pic}
+                          name={getChatName().name}
+                          alt="Profile"
+                          className={`${
+                            isMobile ? "w-32 h-32" : "w-40 h-40"
+                          } rounded-full mx-auto object-cover border-4 ${
+                            darkTheme ? "border-orange-500" : "border-emerald-500"
+                          } shadow-2xl`}
+                          size={isMobile ? 128 : 160}
+                        />
+                      ) : (
+                        <img
+                          src={group}
+                          className={`${
+                            isMobile ? "w-32 h-32" : "w-40 h-40"
+                          } rounded-full mx-auto object-cover border-4 ${
+                            darkTheme ? "border-orange-500" : "border-emerald-500"
+                          } shadow-2xl`}
+                          alt="Group"
+                        />
+                      )}
+                      <div className={`${
+                        darkTheme ? "text-gray-300" : "text-gray-700"
+                      } space-y-2`}>
+                        <p className="text-lg font-semibold">
+                          {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
+                        </p>
+                        {!selectedChat.isGroupChat && (
+                          <p className="text-sm">
+                            <span className="font-medium">Email: </span>
+                            {getChatName()?.email}
+                          </p>
+                        )}
+                      </div>
+                    </DialogDescription>
+                  </DialogHeader>
+                </DialogContent>
+              </Dialog>
+
+              {/* Chat Name and Status */}
+              <div className="flex-1 min-w-0">
+                <h2 className={`text-lg font-bold truncate ${
+                  darkTheme ? "text-white" : "text-gray-900"
+                }`}>
+                  {!selectedChat.isGroupChat ? getChatName().name : getChatName()}
+                </h2>
+                <p className={`text-sm ${
+                  darkTheme ? "text-gray-400" : "text-gray-500"
+                }`}>
+                  {selectedChat.isGroupChat ? `${selectedChat.users.length} members` : ""}
+                </p>
+              </div>
+            </div>
+
+            {/* Call Button */}
+            <button
+              onClick={() => {
+                handleSubmit();
+                setCalling(true);
+              }}
+              className={`p-3 rounded-full ${
+                darkTheme 
+                  ? "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700" 
+                  : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+              } text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105`}
+            >
+              <PhoneCall size={20} />
+            </button>
+          </div>
+          {/* Calling Overlay */}
+          {calling && (
+            <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <div className={`${
+                darkTheme ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              } p-8 rounded-2xl shadow-2xl border text-center space-y-6 max-w-sm mx-4`}>
+                <div className="relative">
+                  {!selectedChat.isGroupChat ? (
+                    <Avatar
+                      src={getChatName().pic}
+                      name={getChatName().name}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-emerald-500 shadow-lg"
+                      size={96}
+                    />
+                  ) : (
+                    <img
+                      src={group}
+                      className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-emerald-500 shadow-lg"
+                      alt="Group"
+                    />
+                  )}
+                  <div className="absolute inset-0 rounded-full border-4 border-emerald-500 animate-ping"></div>
+                </div>
+                
+                <div className={`space-y-2 ${darkTheme ? "text-white" : "text-gray-900"}`}>
+                  <h3 className="text-xl font-bold">
+                    Calling {!selectedChat.isGroupChat ? getChatName().name : getChatName()}...
+                  </h3>
+                  <p className={`text-sm ${darkTheme ? "text-gray-400" : "text-gray-600"}`}>
+                    Connecting to call...
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => setCalling(false)}
+                  className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-colors duration-200 shadow-lg"
+                >
+                  Cancel Call
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-hidden">
+            <Scrollbars
+              autoHide
+              autoHideTimeout={1000}
+              autoHideDuration={200}
+              ref={scrollRef}
+              className="h-full"
+            >
+              <div className="p-4 space-y-4">
+                {messages.map((message, index) => {
+                  const isOwn = message.sender._id === user._id;
+                  const showAvatar = selectedChat.isGroupChat && 
+                    !isOwn && 
+                    (index === messages.length - 1 || messages[index + 1]?.sender._id !== message.sender._id);
+
+                  return (
+                    <div key={message._id} className="space-y-2">
+                      {/* Message Bubble */}
+                      <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-end gap-2`}>
+                        {/* Avatar for group chats */}
+                        {showAvatar && (
+                          <Avatar
+                            src={message.sender.pic}
+                            name={message.sender.name}
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                            size={32}
+                          />
+                        )}
+                        
+                        <div className={`
+                          group max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl
+                          ${isOwn 
+                            ? `${
+                                darkTheme 
+                                  ? "bg-gradient-to-r from-orange-600 to-amber-600" 
+                                  : "bg-gradient-to-r from-emerald-600 to-green-600"
+                              } text-white` 
+                            : `${
+                                darkTheme 
+                                  ? "bg-gray-700 text-white" 
+                                  : "bg-white text-gray-900 border border-gray-200"
+                              }`
+                          }
+                          rounded-2xl px-4 py-3 shadow-lg backdrop-blur-sm relative
+                        `}
+                        style={{
+                          borderRadius: isOwn 
+                            ? "20px 20px 4px 20px" 
+                            : "20px 20px 20px 4px"
+                        }}
+                        >
+                          {/* Delete Button for Own Messages */}
+                          {isOwn && (
+                            <button
+                              onClick={() => deleteMessage(message._id)}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 z-10"
+                              title="Delete message"
+                            >
+                              <ArrowDown size={12} />
+                            </button>
+                          )}
+
+                          {/* Group Chat Sender Name */}
+                          {selectedChat.isGroupChat && !isOwn && (
+                            <p className={`text-xs font-medium mb-1 ${
+                              darkTheme ? "text-orange-300" : "text-emerald-600"
+                            }`}>
+                              {message.sender.name}
+                            </p>
+                          )}
+
+                          {/* Message Content */}
+                          <div className="space-y-2">
+                            {message.content.includes("dqsx8yzbs/image/") ? (
+                              <Dialog>
+                                <DialogTrigger>
+                                  <img 
+                                    src={message.content} 
+                                    alt="Shared image" 
+                                    className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200" 
+                                  />
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl">
+                                  <img 
+                                    src={message.content} 
+                                    alt="Shared image" 
+                                    className="w-full h-auto rounded-lg" 
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                            ) : message.content.includes("dqsx8yzbs/video/") ? (
+                              <video 
+                                src={message.content} 
+                                controls 
+                                className="max-w-full h-40 rounded-lg"
+                              />
+                            ) : message.content.includes("dqsx8yzbs/raw/") ? (
+                              <a
+                                href={message.content}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${
+                                  isOwn 
+                                    ? "bg-white/20 hover:bg-white/30" 
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                } transition-colors duration-200`}
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z"/>
+                                </svg>
+                                <span className="text-sm font-medium">
+                                  {message.content.substring(message.content.lastIndexOf('/') + 1)}
+                                </span>
+                              </a>
+                            ) : (
+                              <p className="text-sm leading-relaxed break-words">
+                                {message.content}
+                              </p>
+                            )}
+
+                            {/* Message Info */}
+                            <div className={`flex items-center justify-end gap-1 text-xs mt-2 ${
+                              isOwn 
+                                ? "text-white/70" 
+                                : darkTheme 
+                                  ? "text-gray-400" 
+                                  : "text-gray-500"
+                            }`}>
+                              <span>{convertToIST(message.createdAt)}</span>
+                              {isOwn && (
+                                <CheckCheck 
+                                  size={16} 
+                                  className={`${
+                                    message.read ? "text-blue-300" : "text-white/50"
+                                  } transition-colors duration-200`}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className={`${
+                      darkTheme ? "bg-gray-700" : "bg-white border border-gray-200"
+                    } rounded-2xl px-4 py-3 shadow-lg`}>
+                      <Lottie
+                        animationData={typinganimation}
+                        loop={true}
+                        autoplay={true}
+                        className="w-12 h-8"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Scrollbars>
+          </div>
 
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div className="absolute bottom-[80px] left-1/2 transform -translate-x-1/2">
+          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-50">
             <EmojiPicker
               onEmojiClick={(emoji) => {
                 setNewMessage(newMessage + emoji.emoji);
@@ -576,55 +757,77 @@ function ChatSection({ showchat, setshowchat, leftbar, showleftbar }) {
             />
           </div>
         )}
-  <form onSubmit={sendMessage} className="flex gap-5 ">
+
+        {/* Message Input Form */}
+        <div className={`${
+          darkTheme 
+            ? "bg-gray-800/90 border-gray-700" 
+            : "bg-white/90 border-gray-200"
+        } backdrop-blur-sm border-t shadow-lg px-4 sm:px-6 py-4`}>
+          <form onSubmit={sendMessage} className="flex items-center gap-3">
+            {/* Emoji Button */}
             <button
               type="button"
-              className="bottom-[120px] left-[50%] transform -translate-x-1/2"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className={`p-2 rounded-full ${
+                darkTheme 
+                  ? "hover:bg-gray-700 text-gray-300" 
+                  : "hover:bg-gray-100 text-gray-600"
+              } transition-colors duration-200`}
             >
-             
-              <Smile className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} ${darkTheme?"text-white":""}`} />
+              <Smile size={20} />
             </button>
-           {!plusloading?(
-            <button
-              type="button"
-              className="bottom-[120px] left-[50%] transform -translate-x-1/2"
-              
-            >
-             <label htmlFor="file-put">
-              <Plus className={`relative ${isMobile ? "left-5 top-1" : "left-[1.6rem] top-2"} cursor-pointer ${darkTheme?"text-white":""}`} />
+
+            {/* File Upload Button */}
+            {!plusloading ? (
+              <label htmlFor="file-put" className={`p-2 rounded-full cursor-pointer ${
+                darkTheme 
+                  ? "hover:bg-gray-700 text-gray-300" 
+                  : "hover:bg-gray-100 text-gray-600"
+              } transition-colors duration-200`}>
+                <Plus size={20} />
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  id="file-put" 
+                  onChange={(e) => generatelink(e.target.files[0])}
+                />
               </label>
-              <input type="file" className="hidden"  id="file-put" onChange={(e)=>generatelink(e.target.files[0])}/>
-         </button>
-):(
-  <div className={`${!isMobile?"top-5":"top-3"} left-1 text-green-600 relative `}><Loader2 className="animate-spin"/></div>
-)}
+            ) : (
+              <div className="p-2">
+                <Loader2 className={`animate-spin ${
+                  darkTheme ? "text-orange-500" : "text-emerald-600"
+                }`} size={20} />
+              </div>
+            )}
+
+            {/* Message Input */}
             <Input
-              className={` md:w-[60rem] rounded-3xl ${isDesktop ? "mt-3 bg-gray-200" : "mt-1 bg-white"} ${darkTheme?"bg-[#3b3b3b] text-white":""} flex-1 placeholder:${darkTheme?"text-gray-500":"text-black"}`}
+              className={`flex-1 rounded-2xl border-none ${
+                darkTheme 
+                  ? "bg-gray-700 text-white placeholder-gray-400 focus:ring-orange-500/20" 
+                  : "bg-gray-100 text-gray-900 placeholder-gray-500 focus:ring-emerald-500/20"
+              } px-4 py-3 focus:ring-2 transition-all duration-200`}
               placeholder="Type your message here..."
               onChange={typingHandler}
               value={newMessage}
-              style={{
-                border: "none",
-                outline: "none",
-                boxShadow: "none",
-              }}
             />
-            <button type="submit">
-              <SendHorizonal
-                className={`p-2 rounded-full relative ${isMobile ? "top-1" : "top-2"} text-white right-2 mt-[-0.5rem] ${darkTheme?"bg-orange-500 ":"bg-green-600 "}`}
-                size={isMobile ? 35 : 40}
-              />
+
+            {/* Send Button */}
+            <button 
+              type="submit"
+              className={`p-3 rounded-full ${
+                darkTheme 
+                  ? "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700" 
+                  : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
+              } text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105`}
+            >
+              <SendHorizonal size={20} />
             </button>
           </form>
-       
-          
-       
-      </div>
-    )
-  )
-}
-
+        </div>
+        </div>
+      )}
     </div>
   );
 }
