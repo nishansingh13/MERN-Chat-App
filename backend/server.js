@@ -49,8 +49,6 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
     console.log(`Server running on :${PORT}`.yellow.bold);
 });
-const emailToSocketIdMap = new Map();
-const socketIdToEmailMap = new Map();
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
     cors: {
@@ -121,52 +119,6 @@ io.on("connection", (socket) => {
           console.error("Error updating message read status:", err);
         }
       });
-  
-  // Handle room join
-  socket.on("join room", ({ email, room }) => {
-    // console.log("User joined with ",email,room);
-    emailToSocketIdMap.set(email, socket.id);
-    socket.join(room);
-    socketIdToEmailMap.set(socket.id, email);
-    socket.broadcast.emit("user joined", { email, id: socket.id ,room});
-    // socket.emit("user joined", { email, id: socket.id });
-    io.to(socket.id).emit("room join", { email, room });
-  });
-
-  // Handle call
-  socket.on("user call", ({ to, offer }) => {
-    console.log("user called");
-    io.to(to).emit("incoming call", { from: socket.id, offer });
-  });
-   
-  // Handle call accepted
-  socket.on("call accepted", ({ to, ans }) => {
-    console.log("Call accepted");
-    io.to(to).emit("call accepted", { from: socket.id, ans });
-  });
-  socket.on("call rejected",(userId)=>{
-    console.log("call rejected by",userId);
-    socket.broadcast.emit("call rejected by receiver",userId);
-  })
-  socket.on("stop call",()=>{
-    io.emit("stop the call");
-  })
-  socket.on("call accepted by receiver",({email})=>{
-    const data = {email, id:socket.id}
-        socket.broadcast.emit("call accepted by receiver",data);
-  })
-  // Handle negotiation needed
-  socket.on("nego needed", ({ to, offer }) => {
-    io.to(to).emit("nego needed", { from: socket.id, offer });
-  });
-
-  // Handle peer negotiation done
-  socket.on("peer nego done", ({ to, ans }) => {
-    io.to(to).emit("peer nego final", { from: socket.id, ans }); // Corrected 'offer' to 'ans'
-  });
-  socket.on("button",()=>{
-    io.emit("button htao");
-  })
   
   socket.off("setup", () => {
         console.log("User disconnected");

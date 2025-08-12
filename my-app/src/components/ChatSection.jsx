@@ -53,7 +53,7 @@ function ChatSection({ showchat, setshowchat }) {
     try {
       await sendMessage(content, socketRef, updateNewestMessage);
     } catch (error) {
-      alert("Error sending message");
+      alert("Error sending message",error);
     }
   };
 
@@ -62,14 +62,14 @@ function ChatSection({ showchat, setshowchat }) {
     try {
       await handleFileUpload(file, socketRef, updateNewestMessage);
     } catch (error) {
-      alert("Error uploading file");
+      alert("Error uploading file",error);
     }
   };
 
 
   const handleTypingWrapper = (value) => {
     if (!socketConnected || !socketRef.current) return;
-
+    console.log("Typing:", value);
     if (!typing) {
       setTyping(true);
       socketRef.current.emit("typing", selectedChat._id);

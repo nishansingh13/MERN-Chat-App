@@ -1,7 +1,3 @@
-/**
- * Message input component with emoji picker and file upload
- */
-
 import { useState } from "react";
 import { Smile, Plus, SendHorizonal, Loader2 } from "lucide-react";
 import PropTypes from "prop-types";
