@@ -1,9 +1,8 @@
 
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import ChatPage from './Pages/ChatPage';
 import HomePage from './Pages/HomePage';
-import Room from './components/Room';
 function App() {
   
 
@@ -22,10 +21,6 @@ function App() {
         <Route 
         path='homepage'
         element = {<HomePage/>}
-        />
-        <Route
-        path='/call'
-        element = {<Room/>}
         />
       </Routes>
     
