@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useEffect } from "react";
+import  { createContext, useContext, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 
 const SocketContext = createContext();
@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }) => {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const endpoint = "https://mern-chat-app-fk6w.onrender.com";
+        const endpoint = "https://chatify-backend-vpg6.onrender.com";
         socketRef.current = io(endpoint);
 
         return () => {

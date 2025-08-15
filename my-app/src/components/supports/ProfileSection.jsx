@@ -6,6 +6,7 @@ import axios from "axios";
 import { ChatState } from "@/Context/ChatProvider";
 import { Avatar } from "../ui/avatar";
 import { Button } from "../ui/button";
+import PropTypes from "prop-types";
 
 function ProfileSection({ showprofile, setshowprofile }) {
   const { user, setUser, darkTheme } = ChatState();
@@ -49,7 +50,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
 
           try {
             const res = await axios.put(
-              "https://mern-chat-app-fk6w.onrender.com/api/user/change-profile",
+              "https://chatify-backend-vpg6.onrender.com/api/user/change-profile",
               updateData
             );
 
@@ -93,7 +94,7 @@ function ProfileSection({ showprofile, setshowprofile }) {
       const data = { id, updatedname };
       try {
         const res = await axios.put(
-          "https://mern-chat-app-fk6w.onrender.com/api/user/change-name",
+          "https://chatify-backend-vpg6.onrender.com/api/user/change-name",
           data
         );
         const updatedUser = { ...user, name: updatedname };
@@ -334,5 +335,10 @@ function ProfileSection({ showprofile, setshowprofile }) {
     </div>
   );
 }
+
+ProfileSection.propTypes = {
+  showprofile: PropTypes.bool.isRequired,
+  setshowprofile: PropTypes.func.isRequired,
+};
 
 export default ProfileSection;

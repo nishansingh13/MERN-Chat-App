@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -16,18 +15,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChatState } from "@/Context/ChatProvider";
-import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+import PropTypes from "prop-types";
 import { useState } from "react";
 
 function Groupchat({ setIsOpen }) {
- 
+  
   const [groupchatname, setgroupchatname] = useState("");
   const [selectedusers, setselectedusers] = useState([]);
   const [search, setsearch] = useState("");
   const [searchresults, setsearchresults] = useState([]);
   const [loading, setloading] = useState(false);
-  const toast = useToast();
   const { user, chats, setChats } = ChatState();
 
   const removeUser = (userId) => {
@@ -47,7 +45,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.get(
-        `https://mern-chat-app-fk6w.onrender.com/api/user?search=${search}`,
+        `https://chatify-backend-vpg6.onrender.com/api/user?search=${search}`,
         config
       );
       setsearchresults(data);
@@ -79,7 +77,7 @@ function Groupchat({ setIsOpen }) {
         },
       };
       const { data } = await axios.post(
-        "https://mern-chat-app-fk6w.onrender.com/api/chat/group",
+        "https://chatify-backend-vpg6.onrender.com/api/chat/group",
         {
           name: groupchatname,
           users: JSON.stringify(selectedusers.map((u) => u._id)),
@@ -195,5 +193,9 @@ function Groupchat({ setIsOpen }) {
     </Dialog>
   );
 }
+
+Groupchat.propTypes = {
+  setIsOpen: PropTypes.func.isRequired,
+};
 
 export default Groupchat;
