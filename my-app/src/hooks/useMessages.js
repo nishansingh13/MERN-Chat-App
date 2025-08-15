@@ -27,7 +27,7 @@ export function useMessages() {
       };
 
       const { data } = await axios.get(
-        `https://mern-chat-app-fk6w.onrender.com/api/message/${selectedChat._id}`,
+        `https://chatify-backend-vpg6.onrender.com/api/message/${selectedChat._id}`,
         config
       );
       
@@ -54,7 +54,7 @@ export function useMessages() {
       };
 
       const { data } = await axios.post(
-        "https://mern-chat-app-fk6w.onrender.com/api/message",
+        "https://chatify-backend-vpg6.onrender.com/api/message",
         {
           content,
           chatId: selectedChat._id,

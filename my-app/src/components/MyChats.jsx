@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
 import { Avatar } from "./ui/avatar";
+import PropTypes from "prop-types";
 
 function MyChats({ open, setOpen, showchat, setshowchat, showprofile, setshowprofile }) {
   const [chatloading, setchatloading] = useState(false);
@@ -54,7 +55,7 @@ function MyChats({ open, setOpen, showchat, setshowchat, showprofile, setshowpro
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get("https://mern-chat-app-fk6w.onrender.com/api/chat", config);
+      const { data } = await axios.get("https://chatify-backend-vpg6.onrender.com/api/chat", config);
       setChats(data);
     } catch (err) {
       console.log("Error fetching chats:", err);
@@ -100,13 +101,13 @@ function MyChats({ open, setOpen, showchat, setshowchat, showprofile, setshowpro
 
   const returnproper = (query) => {
     if (query.content.includes("dqsx8yzbs/image/upload")) {
-      return <span className="flex"><Image className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>Image</span></span>
+      return <span className="flex"><Image className={`${darkTheme ? "text-white" : "text-black"} p-1`} /> <span>Image</span></span>
     }
     else if (query.content.includes("dqsx8yzbs/video/upload")) {
-      return <span className="flex"><FileVideo2 className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>Video</span></span>
+      return <span className="flex"><FileVideo2 className={`${darkTheme ? "text-white" : "text-black"} p-1`} /> <span>Video</span></span>
     }
     else if (query.content.includes("dqsx8yzbs/raw/upload")) {
-      return <span className="flex"><File className={`${darkTheme ? "text-white" : "text-black"} p-1`}/> <span>File</span></span>
+      return <span className="flex"><File className={`${darkTheme ? "text-white" : "text-black"} p-1`} /> <span>File</span></span>
     }
     return query.content;
   };
@@ -380,5 +381,14 @@ function MyChats({ open, setOpen, showchat, setshowchat, showprofile, setshowpro
     </>
   );
 }
+
+MyChats.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+  showchat: PropTypes.bool.isRequired,
+  setshowchat: PropTypes.func.isRequired,
+  showprofile: PropTypes.bool.isRequired,
+  setshowprofile: PropTypes.func.isRequired,
+};
 
 export default MyChats;
